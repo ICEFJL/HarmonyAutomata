@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "PushdownAutomatonAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "PushdownAutomatonAbility_label",
+      "value": "label"
+    }
+  ]
+}

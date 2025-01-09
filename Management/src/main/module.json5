@@ -1,0 +1,28 @@
+{
+  "module": {
+    "name": "Management",
+    "type": "feature",
+    "description": "$string:module_desc",
+    "mainElement": "ManagementAbility",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "ManagementAbility",
+        "srcEntry": "./ets/managementability/ManagementAbility.ets",
+        "description": "$string:ManagementAbility_desc",
+        "icon": "$media:layered_image",
+        "label": "$string:ManagementAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true
+      }
+    ]
+  }
+}

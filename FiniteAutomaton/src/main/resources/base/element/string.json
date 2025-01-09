@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "FiniteAutomatonAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "FiniteAutomatonAbility_label",
+      "value": "label"
+    }
+  ]
+}

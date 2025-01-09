@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "ManagementAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "ManagementAbility_label",
+      "value": "label"
+    }
+  ]
+}

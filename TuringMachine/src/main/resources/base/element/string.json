@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "TuringMachineAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "TuringMachineAbility_label",
+      "value": "label"
+    }
+  ]
+}
