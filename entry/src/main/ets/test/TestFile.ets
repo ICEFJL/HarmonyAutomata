@@ -6,7 +6,7 @@ struct TestFile {
   @State result: string = 'Click the button to test'
 
   // 定义一个测试函数
-  testFunction(): string {
+  testFunction(): void {
     const automaton1 = createTestAutomaton()
     automaton1.saveToFile()
 
@@ -14,7 +14,6 @@ struct TestFile {
 
     const comparisonResult = compareAutomatons(automaton1, automaton2)
     this.result = comparisonResult ? 'Automatons are equal' : 'Automatons are not equal'
-    return 'Test passed!'
   }
 
   build() {
@@ -33,7 +32,7 @@ struct TestFile {
       // 添加一个按钮用于测试
       Button('Run Test')
         .onClick(() => {
-          this.result = this.testFunction()  // 调用测试函数并更新结果
+          this.testFunction()  // 调用测试函数并更新结果
         })
         .margin({ top: 20 })
         .alignSelf(ItemAlign.Center)
