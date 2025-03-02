@@ -1,8 +1,52 @@
 {
   "string": [
     {
-      "name": "page_show",
-      "value": "page from package"
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "自定义Canvas画布"
+    },
+    {
+      "name": "paint",
+      "value": "画笔"
+    },
+    {
+      "name": "state",
+      "value": "状态"
+    },
+    {
+      "name": "transition",
+      "value": "转移"
+    },
+    {
+      "name": "color",
+      "value": "颜色"
+    },
+    {
+      "name": "opacity",
+      "value": "不透明度"
+    },
+    {
+      "name": "delete",
+      "value": "删除"
+    },
+    {
+      "name": "redo",
+      "value": "撤回"
+    },
+    {
+      "name": "undo",
+      "value": "重做"
+    },
+    {
+      "name": "save",
+      "value": "保存"
     }
   ]
 }

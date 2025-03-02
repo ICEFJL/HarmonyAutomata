@@ -61,7 +61,7 @@ export abstract class Automaton<S extends State, T extends Transition> {
 
   public getStateWithName(name: string): S | null {
     for (const state of this.states) {
-      if (state.getName() === name) {
+      if (state.name === name) {
         return state;
       }
     }
