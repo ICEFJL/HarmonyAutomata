@@ -65,7 +65,7 @@ export struct TransitionDetailWindow {
               if(!this.firstCreate){
                 this.mTransition = DrawTransition.deepCopy(this.mTransition);
               }
-              this.mTransition.label += this.labelName;
+              this.mTransition.label = this.labelName;
               this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
               this.drawInvoker.update([this.mTransition]);
               this.endUpdate();

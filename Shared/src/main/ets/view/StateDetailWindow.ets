@@ -4,8 +4,8 @@ import { DrawState } from '../viewmodel/DrawState';
 @CustomDialog
 @Component
 export struct StateDetailWindow {
-  @Consume mState: DrawState;
   @Consume drawInvoker: DrawInvoker;
+  @Consume mState: DrawState;
   mStateName: string = "";
   isInitialState: boolean = false;
   isFinalState: boolean = false;
@@ -82,6 +82,7 @@ export struct StateDetailWindow {
               this.mState = DrawState.deepCopy(this.mState)
               this.mState.state.name = this.mStateName;
               this.mState.isInitialState = this.isInitialState;
+              this.mState.state.isFinal = this.isFinalState;
               this.drawInvoker.update([this.mState])
               this.endUpdate();
               this.controller.close(); // 关闭弹窗

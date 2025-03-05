@@ -2,7 +2,7 @@ import {DrawCanvas, DrawInvoker} from 'shared';
 
 @Entry
 @Component
-struct ParentComponent {
+struct FSAComponent {
   @Provide drawInvoker: DrawInvoker = new DrawInvoker();
 
   @Builder
