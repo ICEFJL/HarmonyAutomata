@@ -1,4 +1,4 @@
-import { BaseAutomaton, compareAutomatons, createTestAutomaton } from 'shared'
+import { FSAAutomaton, compareAutomatons, createTestAutomaton } from 'shared'
 
 @Entry
 @Component
@@ -10,7 +10,7 @@ struct TestFile {
     const automaton1 = createTestAutomaton()
     automaton1.saveToFile()
 
-    const automaton2 = BaseAutomaton.loadFromFile()
+    const automaton2 = FSAAutomaton.loadFromFile()
 
     const comparisonResult = compareAutomatons(automaton1, automaton2)
     this.result = comparisonResult ? 'Automatons are equal' : 'Automatons are not equal'

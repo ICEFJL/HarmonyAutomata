@@ -1,4 +1,4 @@
-import { DateUtil } from '@pura/harmony-utils';
+import { Uuid } from './function/Uuid';
 
 export class Transition {
   // 转移的唯一标识
@@ -14,7 +14,7 @@ export class Transition {
   label: string = "";
 
   constructor(from: number, to: number, label: string = "") {
-    this.uuid = DateUtil.getTodayTime();
+    this.uuid = Uuid.index;
     this.from = from;
     this.to = to;
     this.setLabel(label);

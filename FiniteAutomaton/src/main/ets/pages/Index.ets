@@ -1,9 +1,24 @@
-import {DrawCanvas, DrawInvoker} from 'shared';
+import { Const, DrawCanvas, DrawInvoker, FSAAutomaton, GemLayoutAlgorithm, State, Transition} from 'shared';
 
 @Entry
 @Component
 struct FSAComponent {
   @Provide drawInvoker: DrawInvoker = new DrawInvoker();
+  @Provide update: boolean = false;
+  @Provide unDoDraw: boolean = false;
+  @Provide redoDraw: boolean = false;
+  @Provide index: number = Const.NONE;
+
+  private clearAll(){
+    this.drawInvoker.clearAll();
+    this.unDoDraw = false;
+    this.redoDraw = false;
+  }
+
+  private endUpdate(){
+    this.index = Const.NONE;
+    this.update = !this.update;
+  }
 
   @Builder
   FSAMenu(){
@@ -11,6 +26,9 @@ struct FSAComponent {
       MenuItem({
         content: '保存文件'
       })
+        .onClick(() => {
+
+        })
       MenuItem({
         content: '仿真验证'
       })
@@ -23,6 +41,17 @@ struct FSAComponent {
       MenuItem({
         content: '删除文件'
       })
+      MenuItem({
+        content: '自动布局',
+      })
+        .onClick(() => {
+          let gemLayoutAlgorithm = new GemLayoutAlgorithm<State, Transition>();
+          const automaton = gemLayoutAlgorithm.process(FSAAutomaton.getAutomaton(this.drawInvoker)) as FSAAutomaton;
+          if(automaton.update){
+            automaton.drawAutomaton(this.drawInvoker);
+            this.endUpdate();
+          }
+        })
     }
   }
 

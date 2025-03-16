@@ -81,9 +81,19 @@ export struct StateDetailWindow {
             .onClick(() => {
               this.mState = DrawState.deepCopy(this.mState)
               this.mState.state.name = this.mStateName;
-              this.mState.isInitialState = this.isInitialState;
+              if(this.isInitialState !== this.mState.isInitialState){
+                this.mState.isInitialState = this.isInitialState;
+                if(this.isInitialState){
+                  if(this.drawInvoker.initialState){
+                    this.drawInvoker.initialState.isInitialState = false;
+                  }
+                  this.drawInvoker.initialState = this.mState;
+                }else{
+                  this.drawInvoker.initialState = null;
+                }
+              }
               this.mState.state.isFinal = this.isFinalState;
-              this.drawInvoker.update([this.mState])
+              this.drawInvoker.update([this.mState]);
               this.endUpdate();
               this.controller.close(); // 关闭弹窗
             })

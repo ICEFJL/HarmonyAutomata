@@ -8,7 +8,7 @@ export class DrawOperate{
   op: Array<IDraw> = [];
   type: DrawType = DrawType.UPDATE;
 
-  constructor(op: Array<IDraw>, type: DrawType) {
+  constructor(op: Array<IDraw> = [], type: DrawType = DrawType.UPDATE) {
     this.op = op;
     this.type = type;
   }

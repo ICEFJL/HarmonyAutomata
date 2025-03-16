@@ -1,5 +1,5 @@
 import DrawInvoker from '../viewmodel/DrawInvoker';
-import { IDraw } from '../viewmodel/IDraw';
+import { DrawType, IDraw } from '../viewmodel/IDraw';
 import { Const } from '../common/Constants';
 import { State as AutomatonState } from '../automaton/State';
 import { StateDetailWindow } from '../view/StateDetailWindow';
@@ -9,11 +9,11 @@ import { TransitionDetailWindow } from '../view/TransitionDetailWindow';
 import { HelpUtil } from '../common/HelpUtil';
 import { ToolButton } from '../view/ToolButton';
 
+const setting: RenderingContextSettings = new RenderingContextSettings(true);
+export const globalContext = new CanvasRenderingContext2D(setting);
+
 @Component
 export struct DrawCanvas {
-  @State unDoDraw: boolean = false;
-  @State redoDraw: boolean = false;
-  @State index: number = Const.NONE;
   @State scaleValueX: number = Const.SCALE;
   @State scaleValueY: number = Const.SCALE;
   @State pinchValueX: number = Const.SCALE;
@@ -24,14 +24,16 @@ export struct DrawCanvas {
   private dragStartY: number = 0;
 
   @Consume drawInvoker: DrawInvoker;
+  @Consume index: number;
+  @Consume unDoDraw: boolean;
+  @Consume redoDraw: boolean;
+  @Consume @Watch('endUpdate') update: boolean;
   @Provide mState: DrawState = new DrawState(new AutomatonState(), false);
   @Provide mTransition: DrawTransition = new DrawTransition(new AutomatonState(), new AutomatonState(), "");
   @Provide firstCreate: boolean = false;
   premState: DrawState = new DrawState(new AutomatonState(), false);
-  preLabel: string = "";
 
-  private setting: RenderingContextSettings = new RenderingContextSettings(true);
-  private context: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.setting);
+  private context: CanvasRenderingContext2D = globalContext;
   private isSelected: boolean = false;
   private counter: number = 0;
   private stateWindow: CustomDialogController = new CustomDialogController({
@@ -64,35 +66,19 @@ export struct DrawCanvas {
       this.updateDraw();
       return;
     }
-    this.mState.radius = Const.CIRCLE_RADIUS;
-    this.drawInvoker.isDrawing = false;
 
-    if(this.checkUpdated()){
+    if(!this.drawInvoker.flag){
       let commands = this.drawInvoker.drawList.pop()!;
       this.drawInvoker.pop(commands);
       this.updateDraw();
       return;
     }
+    this.drawInvoker.flag = false;
+    this.firstCreate = false;
     this.drawInvoker.redoList = [];
     this.redoDraw = false;
     this.unDoDraw = true;
     this.updateDraw();
-  }
-
-  checkUpdated(): boolean {
-    if(this.firstCreate){
-      this.firstCreate = false;
-      return false;
-    }
-    switch (this.index) {
-      case Const.STATE:
-        return this.premState.equals(this.mState);
-      case Const.TRANSITION:
-        return this.preLabel === this.mTransition.label;
-      case Const.DELETE:
-        return false;
-    }
-    return true;
   }
 
   drawOperateUndo(): void {
@@ -132,7 +118,6 @@ export struct DrawCanvas {
         const e = eArray[eArray.length - 1];
         if(HelpUtil.isInRectPath([x,y],e.p1 , e.p2, e.p3, e.p4)){
           this.mTransition = e;
-          this.preLabel = e.label;
           return Const.TRANSITION;
         }
       }
@@ -151,7 +136,7 @@ export struct DrawCanvas {
         this.mState = new DrawState(new AutomatonState(touch.x, touch.y, "s" + this.counter), false);
         this.counter++;
         this.drawInvoker.update([this.mState]);
-        this.mState.draw(this.context);
+        this.updateDraw();
         break;
       case Const.TRANSITION:
         if(this.isExist(touch.x, touch.y) !== Const.STATE){
@@ -163,9 +148,9 @@ export struct DrawCanvas {
         if(select === Const.NONE){
           return;
         }else if(select === Const.STATE){
-          this.drawInvoker.delete(this.mState);
+          this.drawInvoker.update([this.mState], DrawType.DELETE);
         }else{
-          this.drawInvoker.delete(this.mTransition);
+          this.drawInvoker.update([this.mTransition], DrawType.DELETE);
         }
         break;
       case Const.NONE :
@@ -227,19 +212,10 @@ export struct DrawCanvas {
 
     switch (this.index) {
       case Const.STATE:
+        const clamped = HelpUtil.clampPosition(this.context, touch.x, touch.y, Const.CIRCLE_RADIUS);
 
-        const newStateX = touch.x;
-        const newStateY = touch.y;
-
-        // 计算状态的中心点是否会移出画布
-        const maxX = this.context.width - this.mState.radius;
-        const maxY = this.context.height - this.mState.radius;
-
-        const clampedX = Math.max(this.mState.radius, Math.min(newStateX, maxX));
-        const clampedY = Math.max(this.mState.radius, Math.min(newStateY, maxY));
-
-        this.mState.state.x = clampedX;
-        this.mState.state.y = clampedY;
+        this.mState.state.x = clamped[0];
+        this.mState.state.y = clamped[1];
         this.updateDraw();
         break;
       case Const.TRANSITION:
@@ -269,6 +245,8 @@ export struct DrawCanvas {
     }
     switch (this.index){
       case Const.STATE:
+        this.mState.radius = Const.CIRCLE_RADIUS;
+        this.drawInvoker.flag = !this.premState.equals(this.mState);
         this.endUpdate();
         break;
       case Const.TRANSITION:
@@ -280,11 +258,9 @@ export struct DrawCanvas {
         const key = DrawInvoker.createKey(start.state.uuid, this.mState.state.uuid);
         if (!this.drawInvoker.transitionMap.has(key)) {
           this.mTransition = new DrawTransition(start.state, this.mState.state,"");
-          this.firstCreate = true;
         }else{
           const transitionArray = this.drawInvoker.transitionMap.get(key)!;
           this.mTransition = transitionArray[transitionArray.length - 1];
-          this.preLabel = this.mTransition.label;
         }
         this.transitionWindow.open();
         break;

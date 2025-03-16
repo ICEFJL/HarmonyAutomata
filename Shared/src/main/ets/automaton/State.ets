@@ -1,4 +1,4 @@
-import { DateUtil } from '@pura/harmony-utils';
+import { Uuid } from './function/Uuid';
 
 export class State {
   // 状态的唯一标识
@@ -14,7 +14,7 @@ export class State {
   x: number = 0;
   y: number = 0;
 
-  constructor(x: number = 0, y: number = 0, name: string = "", isFinal: boolean = false, uuid: number = DateUtil.getTodayTime()) {
+  constructor(x: number = 0, y: number = 0, name: string = "", isFinal: boolean = false, uuid: number = Uuid.index) {
     this.setName(name);
     this.uuid = uuid;
     this.setPosition(x, y);

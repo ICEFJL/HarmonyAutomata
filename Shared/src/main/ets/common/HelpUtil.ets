@@ -89,4 +89,12 @@ export class HelpUtil {
 
     context.restore();
   }
+
+  static clampPosition(context: CanvasRenderingContext2D, x: number, y: number, radius: number): number[] {
+    const maxX = context.width - radius;
+    const maxY = context.height - radius;
+    const clampedX = Math.max(radius, Math.min(x, maxX));
+    const clampedY = Math.max(radius, Math.min(y, maxY));
+    return [ clampedX, clampedY ];
+  }
 }

@@ -1,10 +1,12 @@
-import { LogUtil, DateUtil, FileUtil } from '@pura/harmony-utils';
+import { LogUtil, FileUtil } from '@pura/harmony-utils';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { State } from './State'
 import { Transition } from './Transition'
 import { AutomatonType } from './Type'
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import 'reflect-metadata';
+import { Uuid } from './function/Uuid';
 
 export abstract class Automaton<S extends State, T extends Transition> {
   // 唯一标识
@@ -25,14 +27,17 @@ export abstract class Automaton<S extends State, T extends Transition> {
 
   name: string;
 
+  update: boolean;
+
   constructor(type: AutomatonType) {
-    this.uuid = DateUtil.getTodayTime();
+    this.uuid = Uuid.index;
     this.note = "";
     this.type = type;
     this.name = "Automaton";
     this.states = new Set<S>();
     this.transitions = new Set<T>();
     this.initialState = null;
+    this.update = false;
   }
 
   public addStates(states: S[]): void {
@@ -46,9 +51,25 @@ export abstract class Automaton<S extends State, T extends Transition> {
   }
 
   public removeState(state: S): void {
+    // 收集所有与该状态相关的转移
+    const transitionsToRemove: T[] = [];
+    for (const transition of this.transitions) {
+      if (transition.from === state.uuid || transition.to === state.uuid) {
+        transitionsToRemove.push(transition);
+      }
+    }
+
+    // 移除相关转移
+    for (const transition of transitionsToRemove) {
+      this.removeTransition(transition);
+    }
+
+    // 处理初始状态关联
     if (this.isInitialState(state)) {
       this.initialState = null;
     }
+
+    // 最终删除状态
     this.states.delete(state);
   }
 
@@ -62,6 +83,15 @@ export abstract class Automaton<S extends State, T extends Transition> {
   public getStateWithName(name: string): S | null {
     for (const state of this.states) {
       if (state.name === name) {
+        return state;
+      }
+    }
+    return null;
+  }
+
+  public getStateWithUuid(uuid: number): S | null {
+    for (const state of this.states) {
+      if (state.uuid === uuid) {
         return state;
       }
     }
@@ -84,6 +114,10 @@ export abstract class Automaton<S extends State, T extends Transition> {
 
   public getStates(): S[] {
     return Array.from(this.states);
+  }
+
+  public getTransitionsFromState(uuid: number): T[] {
+    return this.getTransitions().filter((transition) => transition.from === uuid);
   }
 
   public setInitialState(initialState: S | null): void {
@@ -119,8 +153,9 @@ export abstract class Automaton<S extends State, T extends Transition> {
   public saveToFile(dirPath: string = "", fileName: string = "test.json"): void {
     try {
       let path = FileUtil.getFilesDirPath(dirPath, fileName);
-      let file = FileUtil.openSync(path);
-      let len = FileUtil.writeSync(file.fd, this.serialize())
+      let file = FileUtil.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+      let jsonStr = this.serialize();
+      let len = FileUtil.writeSync(file.fd, jsonStr);
       FileUtil.closeSync(file.fd); //关闭文件
     } catch (err) {
       let error = err as BusinessError;

@@ -10,7 +10,17 @@ export class Node<S extends State> {
 }
 
 export enum AutomatonType {
-  FSA = 'FINITE_STATE_AUTOMATON',
-  TM = 'TURING_MACHINE',
-  PDA = 'PUSHDOWN_AUTOMATON'
+  UNKNOWN = "UNKNOWN", // 未知类型
+  FSA = "FSA",         // 有限状态机（Finite State Automaton）
+  DFA = "DFA",         // 确定性有限状态机（Deterministic Finite Automaton）
+  NFA = "NFA",         // 非确定性有限状态机（Non-deterministic Finite Automaton）
+  PDA = "PDA",         // 下推自动机（Pushdown Automaton）
+  TM = "TM",           // 图灵机（Turing Machine）
+  MTM = "MTM",         // 多带图灵机（Multi-track Turing Machine）
+  TMBB = "TMBB",       // 带构建块的图灵机（Turing Machine with Build Blocks）
+  RG = "RG",           // 正则文法（Regular Grammar）
+  CFG = "CFG",         // 上下文无关文法（Context-Free Grammar）
+  CSG = "CSG",         // 上下文有关文法（Context-Sensitive Grammar）
+  PSG = "PSG",         // 递归可枚举文法（Phrase Structure Grammar）
+  Regex = "REGEX"      // 正则表达式（Regular Expression）
 }

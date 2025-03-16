@@ -8,7 +8,7 @@ export { Transition } from './src/main/ets/automaton/Transition'
 
 export { Node, AutomatonType } from './src/main/ets/automaton/Type'
 
-export { BaseAutomaton, createTestAutomaton, compareAutomatons } from './src/main/ets/automaton/Example/BaseAutomaton'
+export { FSAAutomaton, createTestAutomaton, compareAutomatons } from './src/main/ets/automaton/example/FSAAutomaton'
 
 export { DrawCanvas } from './src/main/ets/components/DrawCanvas'
 
@@ -29,3 +29,5 @@ export { TransitionDetailWindow } from './src/main/ets/view/TransitionDetailWind
 export { HelpUtil } from './src/main/ets/common/HelpUtil'
 
 export { Const } from './src/main/ets/common/Constants'
+
+export { GemLayoutAlgorithm } from './src/main/ets/automaton/function/GemLayoutAlgorithm'
