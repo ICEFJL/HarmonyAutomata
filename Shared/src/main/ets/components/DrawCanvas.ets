@@ -8,6 +8,9 @@ import { DrawTransition } from '../viewmodel/DrawTransition';
 import { TransitionDetailWindow } from '../view/TransitionDetailWindow';
 import { HelpUtil } from '../common/HelpUtil';
 import { ToolButton } from '../view/ToolButton';
+//添加
+import { TuringTransitionDetailWindow } from '../view/TuringTransitionDetailWindow';
+import { AutomatonType } from '../automaton/Type';
 
 const setting: RenderingContextSettings = new RenderingContextSettings(true);
 export const globalContext = new CanvasRenderingContext2D(setting);
@@ -44,7 +47,7 @@ export struct DrawCanvas {
     autoCancel: true,               // 允许点击蒙层关闭弹窗
     customStyle: true               // 使用自定义样式
   });
-  private transitionWindow: CustomDialogController = new CustomDialogController({
+  private transitionWindow: CustomDialogController= new CustomDialogController({
     builder: TransitionDetailWindow({ endUpdate: () => this.endUpdate() }), // 弹框的构造器
     cancel: () => {
       console.log("cancel")         // 点击蒙层的回调
@@ -52,6 +55,32 @@ export struct DrawCanvas {
     autoCancel: true,               // 允许点击蒙层关闭弹窗
     customStyle: true               // 使用自定义样式
   });
+  private turingTransitionWindow: CustomDialogController= new CustomDialogController({
+    builder: TuringTransitionDetailWindow({ endUpdate: () => this.endUpdate() }), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  //根据automatonType绘制窗口
+  //step 1: 设置@Prop automatonType,从父组件获取automatonType值
+  @Prop  readonly automatonType:AutomatonType;
+
+  //step 2: 设置函数，根据automatonType使用对应open函数
+  selectTransitionWindow():void{
+    switch(this.automatonType) {
+      case AutomatonType.TM:
+        console.log("已选择TuringTransitionDetailWindow");
+        this.turingTransitionWindow.open();
+        return;
+      default:
+        console.log("默认选择TransitionDetailWindow");
+        this.transitionWindow.open();
+        return;
+    }
+  }
 
   updateDraw(): void {
     this.context.clearRect(0, 0, this.context.width, this.context.height);
@@ -175,7 +204,8 @@ export struct DrawCanvas {
         if (this.isExist(touch.localX, touch.localY, Const.TRANSITION) !== Const.TRANSITION) {
           return;
         }
-        this.transitionWindow.open();
+        //替换
+        this.selectTransitionWindow();
         break;
     }
   }
@@ -262,7 +292,8 @@ export struct DrawCanvas {
           const transitionArray = this.drawInvoker.transitionMap.get(key)!;
           this.mTransition = transitionArray[transitionArray.length - 1];
         }
-        this.transitionWindow.open();
+        //替换
+        this.selectTransitionWindow();
         break;
       case Const.DELETE:
         this.endUpdate();
