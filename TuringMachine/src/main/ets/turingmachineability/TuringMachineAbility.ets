@@ -5,6 +5,7 @@ import { window } from '@kit.ArkUI';
 export default class TuringMachineAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    //InitService.initializeCoreServices();
   }
 
   onDestroy(): void {

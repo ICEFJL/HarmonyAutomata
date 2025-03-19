@@ -57,7 +57,8 @@ export class DrawTransition extends IDraw {
       x += px * Const.LINE_BAND_WIDTH / 2;
       y += py * Const.LINE_BAND_WIDTH / 2;
     }
-    if(this.label.length > 3){
+    //此处label最小长度改为5
+    if(this.label.length > 5){
       context.fillText(this.label.length.toString(), x, y);
     } else {
       context.fillText(this.label.length === 0 ? Const.EMPTY_STRING : this.label, x, y);

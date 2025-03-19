@@ -1,28 +1,30 @@
 {
   "module": {
-    "name": "TuringMachine",
-    "type": "feature",
-    "description": "$string:module_desc",
-    "mainElement": "TuringMachineAbility",
-    "deviceTypes": [
+    "name": "TuringMachine", // 模块名称
+    "type": "feature",       // 模块类型，feature 表示功能模块
+    "description": "$string:module_desc", // 模块描述，引用字符串资源
+    "mainElement": "TuringMachineAbility", // 主入口 Ability
+    "deviceTypes": [         // 支持的设备类型
       "phone",
       "tablet",
       "2in1"
     ],
-    "deliveryWithInstall": true,
-    "installationFree": false,
-    "pages": "$profile:main_pages",
+    "deliveryWithInstall": true, // 是否随应用安装时一起分发
+    "installationFree": false,   // 是否支持免安装
+    "pages": "$profile:main_pages", // 页面路径配置文件
     "abilities": [
       {
-        "name": "TuringMachineAbility",
-        "srcEntry": "./ets/turingmachineability/TuringMachineAbility.ets",
-        "description": "$string:TuringMachineAbility_desc",
-        "icon": "$media:layered_image",
-        "label": "$string:TuringMachineAbility_label",
-        "startWindowIcon": "$media:startIcon",
-        "startWindowBackground": "$color:start_window_background",
-        "exported": true
+        "name": "TuringMachineAbility", // Ability 名称
+        "srcEntry": "./ets/turingmachineability/TuringMachineAbility.ets", // Ability 入口文件
+        "description": "$string:TuringMachineAbility_desc", // Ability 描述
+        "icon": "$media:layered_image", // Ability 图标
+        "label": "$string:TuringMachineAbility_label", // Ability 标签
+        "startWindowIcon": "$media:startIcon", // 启动窗口图标
+        "startWindowBackground": "$color:start_window_background", // 启动窗口背景
+        "exported": true // 是否允许其他应用调用
       }
     ]
   }
+
+
 }
