@@ -23,6 +23,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   note: string;
   type: AutomatonType;
   name: string;
+  update: boolean;
 
   constructor(type: AutomatonType.TM) {
     this.uuid =Uuid.index;
@@ -37,6 +38,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     this.headPosition = 0;
     this.currentState = null;
     this.currentTape = "";
+    this.update = false;
   }
 
   /** 验证状态是否有效 */
