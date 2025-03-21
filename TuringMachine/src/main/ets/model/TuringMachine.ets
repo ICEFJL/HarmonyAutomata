@@ -113,11 +113,6 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   public addState(state: S): void {
     this.states.add(state);
-    // 如果这是第一个添加的状态且未设置初始状态，自动设为初始状态
-    if (this.states.size === 1 && !this.initialState) {
-      this.setInitialState(state); // q0 会被设置
-      console.log(state.name,"是第一个添加的状态且未设置初始状态，自动设为初始状态!");
-    }
   }
 
   public removeState(state: S): void {

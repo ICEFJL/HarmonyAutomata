@@ -2,6 +2,8 @@ import { Const, DrawCanvas, DrawInvoker,State, AutomatonType} from 'shared';
 import {BaseTuringMachine} from '../model/BaseTuringMachine'
 import {TuringTransition} from '../model/TuringTransition'
 import {TuringGemLayoutAlgorithm} from '../model/TuringGemLayoutAlgorithm'
+import {FileManager}from 'shared/src/main/ets/automaton/FileManager'
+
 
 @Entry
 @Component
@@ -29,37 +31,22 @@ struct TMComponent {
     Menu() {
       MenuItem({ content: '保存文件' })
         .onClick(() => {
-          const turingMachine =BaseTuringMachine.createExample();
-          turingMachine.saveToFile();
-
+          //const  exampleTM = BaseTuringMachine.getTuringMachine(this.drawInvoker);
+          const  exampleTM =BaseTuringMachine.createExample();
+          const exampleFile= new FileManager(AutomatonType.TM);
+          exampleTM.saveToFile();
+          exampleTM.runTuringMachine();
+          exampleFile.initFileList();
+          exampleFile.deleteSelectFile('/data/storage/el2/base/haps/TuringMachine/files','test.json');
+          exampleFile.initFileList();
         })
       MenuItem({ content: '仿真验证' })
         .onClick(() => {
           const exampleTM =BaseTuringMachine.loadFromFile();
-          console.log("Initial Tape:", exampleTM.getCurrentTape());
-          console.log("Head Position:", exampleTM.headPosition);
-          console.log("CurrentSymbol:", exampleTM.getCurrentSymbol());
-
-          let stepCount = 0;
-          console.log(`Step ${++stepCount}:`);
-          try {
-            while (exampleTM.step()) {
-              console.log(`Step ${++stepCount}:`);
-              console.log("Head Position:", exampleTM.headPosition);
-              console.log("Current Symbol:", exampleTM.getCurrentSymbol());
-              console.log("Tape:", exampleTM.getCurrentTape());
-              console.log("-------------------");
-            }
-          } catch (e) {
-            console.error("执行异常:", e);
-            throw new Error('Failed to run TuringMachine');
-          }
-
-          console.log("Final Tape:", exampleTM.getCurrentTape());
-
+          exampleTM.runTuringMachine();
 
         })
-      MenuItem({ content: '文件管理' })
+      MenuItem({ content: '删除文件' })
         .onClick(() => {
 
 

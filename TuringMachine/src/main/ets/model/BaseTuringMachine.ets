@@ -1,4 +1,4 @@
-import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw,Transition } from 'shared'
+import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw} from 'shared'
 import {TuringTransition} from './TuringTransition'
 import {FileUtil} from '@pura/harmony-utils';
 import {TuringMachine} from './TuringMachine'
@@ -186,7 +186,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     q1.setName("q1");q1.setPosition(100, 0);
     q1.isFinal = true; // 终止状态
     tm.addStates([q0, q1]);
-
+    tm.initialState=q0;
     // 定义转换规则
     try {
       tm.addTransitions([
@@ -206,6 +206,28 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     return tm;
   }
 
+  public runTuringMachine(): void {
+    console.log("Initial Tape:", this.getCurrentTape());
+    console.log("Head Position:", this.headPosition);
+    console.log("CurrentSymbol:", this.getCurrentSymbol());
+
+    let stepCount = 0;
+    console.log(`Step ${++stepCount}:`);
+    try {
+      while (this.step()) {
+        console.log(`Step ${++stepCount}:`);
+        console.log("Head Position:", this.headPosition);
+        console.log("Current Symbol:", this.getCurrentSymbol());
+        console.log("Tape:", this.getCurrentTape());
+        console.log("-------------------");
+      }
+    } catch (e) {
+      console.error("执行异常:", e);
+      throw new Error('Failed to run TuringMachine');
+    }
+
+    console.log("Final Tape:", this.getCurrentTape());
+  }
 
   public serialize(): string {
     try {
