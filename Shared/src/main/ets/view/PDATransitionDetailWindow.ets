@@ -20,7 +20,14 @@ export struct PDATransitionDetailWindow {
   private controller: CustomDialogController;
 
   aboutToAppear(): void {
-    this.labelName = this.mTransition.label;
+    if(this.mTransition.label.length>1){
+      this.readSymbol = this.mTransition.label[0];
+      this.popSymbol = this.mTransition.label[2];
+      this.labelName = this.mTransition.label[4];
+    }
+    else{
+      this.labelName = this.mTransition.label;
+    }
   }
 
   build() {
@@ -38,7 +45,7 @@ export struct PDATransitionDetailWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
+            .maxLength(1)
         }
         .margin({top: 5})
 
@@ -50,7 +57,7 @@ export struct PDATransitionDetailWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
+            .maxLength(1)
         }
         .margin({top: 5})
 
@@ -62,7 +69,7 @@ export struct PDATransitionDetailWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
+            .maxLength(1)
         }
         .margin({top: 5})
 
