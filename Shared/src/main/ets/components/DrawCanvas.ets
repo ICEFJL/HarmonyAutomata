@@ -10,6 +10,7 @@ import { HelpUtil } from '../common/HelpUtil';
 import { ToolButton } from '../view/ToolButton';
 //添加
 import { TuringTransitionDetailWindow } from '../view/TuringTransitionDetailWindow';
+import { PDATransitionDetailWindow } from '../view/PDATransitionDetailWindow';
 import { AutomatonType } from '../automaton/Type';
 
 const setting: RenderingContextSettings = new RenderingContextSettings(true);
@@ -63,6 +64,14 @@ export struct DrawCanvas {
     autoCancel: true,               // 允许点击蒙层关闭弹窗
     customStyle: true               // 使用自定义样式
   });
+  private PDATransitionWindow: CustomDialogController= new CustomDialogController({
+    builder: PDATransitionDetailWindow({ endUpdate: () => this.endUpdate() }), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
 
   //根据automatonType绘制窗口
   //step 1: 设置@Prop automatonType,从父组件获取automatonType值
@@ -74,6 +83,10 @@ export struct DrawCanvas {
       case AutomatonType.TM:
         console.log("已选择TuringTransitionDetailWindow");
         this.turingTransitionWindow.open();
+        return;
+      case AutomatonType.PDA:
+        console.log("已选择PDTransitionDetailWindow");
+        this.PDATransitionWindow.open();
         return;
       default:
         console.log("默认选择TransitionDetailWindow");
