@@ -13,7 +13,7 @@ export class DrawTransition extends IDraw {
   p3: [number, number] = [0, 0];
   p4: [number, number] = [0, 0];
   private selfRingLinePath: Path2D = new Path2D();
-  private baseLine: [number, number][] = [[0, 0], [0, 0]];
+  public  baseLine: [number, number][] = [[0, 0], [0, 0]];
   private arrowEnd: [number, number][] = [[0, 0], [0, 0], [0, 0]];
 
   constructor(fromState: State, toState: State, label: string, needOffset: boolean = false) {

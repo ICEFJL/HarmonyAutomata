@@ -157,6 +157,22 @@ export struct DrawCanvas {
     }
     if(index === Const.DELETE || index === Const.TRANSITION){
       for (const eArray of this.drawInvoker.transitionMap.values()) {
+        for(let i = 0; i < eArray.length;i++){
+          const e = eArray[i];
+          // 判断标签区域：可以根据标签的坐标和大小判断
+          const labelX = (e.baseLine[0][0] + e.baseLine[1][0]) / 2;
+          const labelY = (e.baseLine[0][1] + e.baseLine[1][1]) / 2 - 8 * i;
+
+          const dx = x - labelX;
+          const dy = y - labelY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // 假设标签区域的点击范围是一个固定的半径（例如 20）
+          if (distance <= 4) {
+            this.mTransition = e;
+            return Const.TRANSITION;
+          }
+        }
         const e = eArray[eArray.length - 1];
         if(HelpUtil.isInRectPath([x,y],e.p1 , e.p2, e.p3, e.p4)){
           this.mTransition = e;
