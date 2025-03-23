@@ -5,10 +5,7 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {
-    "shared": "file:../Shared"
-  },
-  "devDependencies": {
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "dynamicDependencies": {}
 }

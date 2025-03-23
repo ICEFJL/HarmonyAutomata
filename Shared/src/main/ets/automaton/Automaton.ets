@@ -3,10 +3,10 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { State } from './State'
 import { Transition } from './Transition'
 import { AutomatonType } from './Type'
-import { fileIo as fs } from '@kit.CoreFileKit';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import 'reflect-metadata';
 import { Uuid } from './function/Uuid';
+import { Const, SavedFile } from '../../../../Index';
 
 export abstract class Automaton<S extends State, T extends Transition> {
   // 唯一标识
@@ -150,13 +150,10 @@ export abstract class Automaton<S extends State, T extends Transition> {
     }
   }
 
-  public saveToFile(dirPath: string = "", fileName: string = "test.json"): void {
+  public saveToFile(dirPath: string = ""): void {
     try {
-      let path = FileUtil.getFilesDirPath(dirPath, fileName);
-      let file = FileUtil.openSync(path, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
       let jsonStr = this.serialize();
-      let len = FileUtil.writeSync(file.fd, jsonStr);
-      FileUtil.closeSync(file.fd); //关闭文件
+      SavedFile.saveToFile(jsonStr, dirPath, this.name + Const.FILE_POSTFIX);
     } catch (err) {
       let error = err as BusinessError;
       LogUtil.error(`BaseAutomaton-saveToFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);

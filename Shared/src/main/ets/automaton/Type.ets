@@ -9,6 +9,22 @@ export class Node<S extends State> {
   }
 }
 
+export class ExecutionTrace{
+  read: string | null;
+  to: number;
+  constructor(read: string | null, to: number){
+    this.read = read;
+    this.to = to;
+  }
+}
+
+export class ExecutionResult{
+  accepted: boolean;
+  constructor(accepted: boolean) {
+    this.accepted = accepted;
+  }
+}
+
 export enum AutomatonType {
   UNKNOWN = "UNKNOWN", // 未知类型
   FSA = "FSA",         // 有限状态机（Finite State Automaton）

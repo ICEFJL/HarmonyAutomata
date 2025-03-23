@@ -3,14 +3,15 @@ import { State } from '../State';
 import { Transition } from '../Transition';
 import { LogUtil, FileUtil } from '@pura/harmony-utils';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { fileIo as fs, ReadTextOptions } from '@kit.CoreFileKit';
-import { AutomatonType } from '../Type'
+import { AutomatonType, Node } from '../Type'
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import 'reflect-metadata';
 import DrawInvoker from '../../viewmodel/DrawInvoker';
 import { DrawState } from '../../viewmodel/DrawState';
 import { DrawTransition } from '../../viewmodel/DrawTransition';
 import { IDraw } from '../../viewmodel/IDraw';
+import { Const, SavedFile } from '../../../../../Index';
+import { FSAState } from './simulateFSA';
 
 export class FSAAutomaton extends Automaton<State, Transition> {
   constructor() {
@@ -31,8 +32,6 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       const transition = transitions[transitions.length - 1];
       fsa.addTransition(new Transition(transition.fromState.uuid, transition.toState.uuid, transition.label));
     });
-
-    fsa.removeUnconnectedStates();
 
     return fsa;
   }
@@ -62,7 +61,7 @@ export class FSAAutomaton extends Automaton<State, Transition> {
     let drawArray: Array<IDraw> = [];
     const states = this.getStates();
     for (const state of states) {
-      if(state === this.initialState){
+      if(state.uuid == this.initialState?.uuid){
         draw.initialState = new DrawState(state, true);
         drawArray.push(draw.initialState);
       }else{
@@ -80,6 +79,26 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
     draw.update(drawArray);
+  }
+
+  public getSuccessors(node: Node<FSAState>): Node<FSAState>[]{
+    const successors: Node<FSAState>[] = [];
+    const transitions: Transition[] = this.getTransitionsFromState(node.state.uuid);
+    const symbol = node.state.remaining[0]
+    for (const transition of transitions) {
+      const label = transition.label;
+      const lambdaTransition = label.length === 0
+      const toState = this.getStateWithUuid(transition.to);
+      if(!toState || (!lambdaTransition && !label.includes(symbol))){
+        continue;
+      }
+      const graphState =new FSAState(lambdaTransition
+        ? node.state.remaining
+        : node.state.remaining.slice(1), lambdaTransition ? '' : symbol, toState);
+      const newNode = new Node<FSAState>(graphState, node);
+      successors.push(newNode);
+    }
+    return successors;
   }
 
   public static getAlphabet(automaton: FSAAutomaton): string[] {
@@ -160,17 +179,9 @@ export class FSAAutomaton extends Automaton<State, Transition> {
     return allStates.filter(state => !visited.has(state.uuid));
   }
 
-  public static loadFromFile(dirPath: string = "", fileName: string = "test.json"): FSAAutomaton {
+  public static loadFromFile(dirPath: string = "", fileName: string = "test"): FSAAutomaton {
     try {
-      let filePath = FileUtil.getFilesDirPath(dirPath, fileName);
-      let readTextOptions: ReadTextOptions = {
-        offset: 0,
-        length: 0,
-        encoding: 'utf-8'
-      };
-      let stat = fs.statSync(filePath);
-      readTextOptions.length = stat.size;
-      let bufferStr = fs.readTextSync(filePath, readTextOptions);
+      let bufferStr = SavedFile.loadFromFile(dirPath, fileName + Const.FILE_POSTFIX);
       return FSAAutomaton.deserialize(bufferStr);
     } catch (err) {
       let error =err as BusinessError;

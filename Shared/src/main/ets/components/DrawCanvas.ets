@@ -312,7 +312,7 @@ export struct DrawCanvas {
         .height(Const.ONE_HUNDRED_PERCENT)
         .backgroundColor($r('sys.color.white'))
         .onReady(() => {
-          HelpUtil.drawGrid(this.context);
+          this.endUpdate();
         })
         .onTouch((event: TouchEvent) => {
           if (event.touches.length !== 1 || event.touches[0].id !== 0) {
@@ -438,7 +438,8 @@ export struct DrawCanvas {
       .justifyContent(FlexAlign.SpaceBetween)
       .alignItems(VerticalAlign.Center)
       .width(Const.ONE_HUNDRED_PERCENT)
-      .backgroundColor(Color.White);
+      .backgroundColor(Color.White)
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
     }
     .backgroundColor($r('sys.color.comp_background_focus'))
     .width(Const.ONE_HUNDRED_PERCENT)

@@ -4,7 +4,8 @@
   "dependencies": {
     "@pura/harmony-utils": "^1.2.5",
     "class-transformer": "^0.5.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "shared": "file:./Shared"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.19",

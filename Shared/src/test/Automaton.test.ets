@@ -2,7 +2,7 @@ import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from
 import { State } from '../main/ets/automaton/State'
 import { Transition } from '../main/ets/automaton/Transition'
 import { LogUtil, DateUtil } from '@pura/harmony-utils';
-import { FSAAutomaton, compareAutomatons, createTestAutomaton } from '../main/ets/automaton/example/FSAAutomaton'
+import { FSAAutomaton, compareAutomatons, createTestAutomaton } from '../main/ets/automaton/fsa/FSAAutomaton'
 
 export default function AutomatonTest() {
   describe('AutomatonTest', () => {

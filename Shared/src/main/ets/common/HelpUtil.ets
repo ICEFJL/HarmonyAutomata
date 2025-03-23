@@ -1,3 +1,5 @@
+import { SavedFile } from "../../../../Index";
+import { globalContext } from "../components/DrawCanvas";
 import { Const } from "./Constants";
 
 export class HelpUtil {
@@ -96,5 +98,18 @@ export class HelpUtil {
     const clampedX = Math.max(radius, Math.min(x, maxX));
     const clampedY = Math.max(radius, Math.min(y, maxY));
     return [ clampedX, clampedY ];
+  }
+
+  static savePicture(name: string): void{
+    let picture = globalContext.toDataURL();
+    SavedFile.saveToFile(picture, "", name + Const.PIC_POSTFIX);
+  }
+
+  static getPicture(name: string): string{
+    return SavedFile.loadFromFile("", name + Const.PIC_POSTFIX);
+  }
+
+  static deletePicture(name: string): void{
+    SavedFile.deleteFile("", name + Const.PIC_POSTFIX);
   }
 }

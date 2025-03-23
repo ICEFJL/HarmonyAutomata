@@ -6,9 +6,9 @@ export { State } from './src/main/ets/automaton/State'
 
 export { Transition } from './src/main/ets/automaton/Transition'
 
-export { Node, AutomatonType } from './src/main/ets/automaton/Type'
+export { Node, AutomatonType, ExecutionTrace, ExecutionResult } from './src/main/ets/automaton/Type'
 
-export { FSAAutomaton, createTestAutomaton, compareAutomatons } from './src/main/ets/automaton/example/FSAAutomaton'
+export { FSAAutomaton, createTestAutomaton, compareAutomatons } from './src/main/ets/automaton/fsa/FSAAutomaton'
 
 export { DrawCanvas } from './src/main/ets/components/DrawCanvas'
 
@@ -28,6 +28,22 @@ export { TransitionDetailWindow } from './src/main/ets/view/TransitionDetailWind
 
 export { HelpUtil } from './src/main/ets/common/HelpUtil'
 
-export { Const } from './src/main/ets/common/Constants'
+export { Const, SAVED_FILE, FunctionUrl } from './src/main/ets/common/Constants'
 
 export { GemLayoutAlgorithm } from './src/main/ets/automaton/function/GemLayoutAlgorithm'
+
+export { SavedFile } from './src/main/ets/common/SavedFile'
+
+export { Database } from './src/main/ets/common/Database'
+
+export { SaveFileWindow } from './src/main/ets/view/SaveFileWindow'
+
+export { ConfirmWindow } from './src/main/ets/view/ConfirmWindow'
+
+export { FSAState,
+  FSAExecutionTrace,
+  FSAExecutionResult,
+  generateTrace,
+  simulateFSA } from './src/main/ets/automaton/fsa/simulateFSA'
+
+export { SimulateWindow } from './src/main/ets/view/SimulateWindow'
