@@ -23,6 +23,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   note: string;
   type: AutomatonType;
   name: string;
+  update: boolean;
 
   constructor(type: AutomatonType.TM) {
     this.uuid =Uuid.index;
@@ -37,6 +38,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     this.headPosition = 0;
     this.currentState = null;
     this.currentTape = "";
+    this.update = false;
   }
 
   /** 验证状态是否有效 */
@@ -111,11 +113,6 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   public addState(state: S): void {
     this.states.add(state);
-    // 如果这是第一个添加的状态且未设置初始状态，自动设为初始状态
-    if (this.states.size === 1 && !this.initialState) {
-      this.setInitialState(state); // q0 会被设置
-      console.log(state.name,"是第一个添加的状态且未设置初始状态，自动设为初始状态!");
-    }
   }
 
   public removeState(state: S): void {

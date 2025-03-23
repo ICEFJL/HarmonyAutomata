@@ -118,11 +118,12 @@ export default class DrawInvoker {
           this.flag = true;
         }else if(!this.flag){
           const transitionArray = this.transitionMap.get(key)!;
-          if(transitionArray && transitionArray[transitionArray.length - 1].label !== command.label){
+          if(transitionArray &&  !transitionArray.some(transition => transition.label === command.label)){
             this.flag = true;
           }
         }
         this.transitionMap.get(key)!.push(command);
+        //console.log('查看有多少个转移', JSON.stringify(this.transitionMap.get(key)));
         tempArray.push(command);
       }
     });
@@ -186,7 +187,17 @@ export default class DrawInvoker {
         states[states.length - 1].draw(context);
       });
       this.transitionMap.forEach((transitions) => {
-        transitions[transitions.length - 1].draw(context);
+        if(transitions.length > 1){
+          transitions.forEach((transition, index) => {
+            transition.drawOffset(context, 8 * index);  // 绘制每条转移
+            //console.log("调用了drawOffset", 50*index)
+          });
+        }
+        else{
+          transitions.forEach((transition) => {
+            transition.draw(context);  // 绘制每条转移
+          });
+        }
       });
     }
   }

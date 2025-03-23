@@ -14,7 +14,7 @@ export class TuringTransition extends Transition {
     moveDirection: 'L' | 'R' | 'S'
   ) {
     // 生成标签
-    const label = `${readSymbol}→${writeSymbol},${moveDirection}`;
+    const label = `${readSymbol},${writeSymbol};${moveDirection}`;
     super(from, to,label);
     this.readSymbol = readSymbol;
     this.writeSymbol = writeSymbol;

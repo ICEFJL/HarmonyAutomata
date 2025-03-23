@@ -13,7 +13,7 @@ export class DrawTransition extends IDraw {
   p3: [number, number] = [0, 0];
   p4: [number, number] = [0, 0];
   private selfRingLinePath: Path2D = new Path2D();
-  private baseLine: [number, number][] = [[0, 0], [0, 0]];
+  public  baseLine: [number, number][] = [[0, 0], [0, 0]];
   private arrowEnd: [number, number][] = [[0, 0], [0, 0], [0, 0]];
 
   constructor(fromState: State, toState: State, label: string, needOffset: boolean = false) {
@@ -62,6 +62,58 @@ export class DrawTransition extends IDraw {
       context.fillText(this.label.length.toString(), x, y);
     } else {
       context.fillText(this.label.length === 0 ? Const.EMPTY_STRING : this.label, x, y);
+    }
+
+    context.beginPath();
+    context.moveTo(this.arrowEnd[0][0], this.arrowEnd[0][1]);
+    context.lineTo(this.arrowEnd[1][0], this.arrowEnd[1][1]);
+    context.moveTo(this.arrowEnd[0][0], this.arrowEnd[0][1]);
+    context.lineTo(this.arrowEnd[2][0], this.arrowEnd[2][1]);
+    context.strokeStyle = Color.Black;
+    context.stroke();
+
+    // context.strokeStyle = Color.Red;
+    // context.stroke(HelpUtil.getRectPath(this.p1, this.p2, this.p3, this.p4));
+  }
+
+  public drawOffset(context: CanvasRenderingContext2D, labelOffset: number): void {
+    if (this.fromState === this.toState) {
+      this.calculateSelfRingLineInfo();
+      this.drawSelfRing(context);
+    } else {
+      this.calculateStraightLineInfo();
+      this.drawNormalTransition(context);
+    }
+
+    // Draw the labels
+    context.font = Const.LABEL_FONT;
+    context.fillStyle = 'Black';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    let x: number = (this.baseLine[0][0] + this.baseLine[1][0]) / 2;
+    let y: number = (this.baseLine[0][1] + this.baseLine[1][1]) / 2;
+    if(this.fromState !== this.toState){
+      const dx = this.baseLine[1][0] - this.baseLine[0][0];
+      const dy = this.baseLine[1][1] - this.baseLine[0][1];
+
+      const length = Math.sqrt(dx * dx + dy * dy);
+
+      const nx = dx / length;
+      const ny = dy / length;
+
+      const px = ny;
+      const py = -nx;
+
+      x += px * Const.LINE_BAND_WIDTH / 2;
+      y += py * Const.LINE_BAND_WIDTH / 2;
+    }
+    //此处label最小长度改为5
+    if(this.label.length > 5){
+      context.fillText(this.label.length.toString(), x, y);
+    } else {
+      context.fillText(this.label.length === 0 ? Const.EMPTY_STRING : this.label, x, y - labelOffset);
+      //console.log("检查偏移", x+labelOffset)
     }
 
     context.beginPath();

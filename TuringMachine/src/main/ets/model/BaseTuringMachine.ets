@@ -1,4 +1,4 @@
-import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw } from 'shared'
+import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw} from 'shared'
 import {TuringTransition} from './TuringTransition'
 import {FileUtil} from '@pura/harmony-utils';
 import {TuringMachine} from './TuringMachine'
@@ -12,7 +12,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     super(AutomatonType.TM);
   }
 
-  public static getAutomaton(draw: DrawInvoker): BaseTuringMachine{
+  public static getTuringMachine(draw: DrawInvoker): BaseTuringMachine{
     const tm = new BaseTuringMachine();
     draw.stateMap.forEach((states) => {
       const drawState = states[states.length - 1];
@@ -69,7 +69,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     });
   }
 
-  public drawAutomaton(draw: DrawInvoker){
+  public drawTuringMachine(draw: DrawInvoker){
     let drawArray: Array<IDraw> = [];
     const states = this.getStates();
     for (const state of states) {
@@ -110,6 +110,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     const allStates = automaton.getStates(); // 直接获取状态对象列表
 
     if (!automaton.initialState) {
+      console.log("无初态");
       return allStates; // 无初始状态时返回所有状态对象
     }
 
@@ -140,6 +141,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     const finalIds = new Set(finalStates.map(s => s.uuid));
 
     if (finalIds.size === 0) {
+      console.log("无终态");
       return allStates; // 无终态时所有状态均为死状态
     }
 
@@ -184,7 +186,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     q1.setName("q1");q1.setPosition(100, 0);
     q1.isFinal = true; // 终止状态
     tm.addStates([q0, q1]);
-
+    tm.initialState=q0;
     // 定义转换规则
     try {
       tm.addTransitions([
@@ -204,6 +206,28 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     return tm;
   }
 
+  public runTuringMachine(): void {
+    console.log("Initial Tape:", this.getCurrentTape());
+    console.log("Head Position:", this.headPosition);
+    console.log("CurrentSymbol:", this.getCurrentSymbol());
+
+    let stepCount = 0;
+    console.log(`Step ${++stepCount}:`);
+    try {
+      while (this.step()) {
+        console.log(`Step ${++stepCount}:`);
+        console.log("Head Position:", this.headPosition);
+        console.log("Current Symbol:", this.getCurrentSymbol());
+        console.log("Tape:", this.getCurrentTape());
+        console.log("-------------------");
+      }
+    } catch (e) {
+      console.error("执行异常:", e);
+      throw new Error('Failed to run TuringMachine');
+    }
+
+    console.log("Final Tape:", this.getCurrentTape());
+  }
 
   public serialize(): string {
     try {
@@ -218,7 +242,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   public saveToFile(dirPath: string = "", fileName: string = "test.json"): void {
     try {
       let path = FileUtil.getFilesDirPath(dirPath, fileName);
-
+      console.log("文件保存路径：",path);
       let file = FileUtil.openSync(path);
       let len = FileUtil.writeSync(file.fd, this.serialize())
       FileUtil.closeSync(file.fd); //关闭文件
@@ -233,7 +257,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   public static loadFromFile(dirPath: string = "", fileName: string = "test.json"): BaseTuringMachine {
     try {
       let filePath = FileUtil.getFilesDirPath(dirPath, fileName);
-      console.log('filePath:',filePath);
+      console.log("文件加载路径：",filePath);
       let readTextOptions: ReadTextOptions = {
         offset: 0,
         length: 0,
