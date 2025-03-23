@@ -35,6 +35,7 @@ export struct DrawCanvas {
   @Provide mState: DrawState = new DrawState(new AutomatonState(), false);
   @Provide mTransition: DrawTransition = new DrawTransition(new AutomatonState(), new AutomatonState(), "");
   @Provide firstCreate: boolean = false;
+  @Provide alterflag: boolean = false;
   premState: DrawState = new DrawState(new AutomatonState(), false);
 
   private context: CanvasRenderingContext2D = globalContext;
