@@ -8,6 +8,7 @@ import { IDraw } from '../viewmodel/IDraw';
 export struct TransitionDetailWindow {
   @Consume mTransition: DrawTransition;
   @Consume firstCreate: boolean;
+  @Consume alterflag: boolean;
   @Consume drawInvoker: DrawInvoker;
   labelName: string = "";
   endUpdate: Function = () => {};
@@ -62,9 +63,10 @@ export struct TransitionDetailWindow {
             .height("100%")
             .layoutWeight(1)
             .onClick(() => {
-              if(!this.firstCreate){
+              if(!this.firstCreate && !this.alterflag){
                 this.mTransition = DrawTransition.deepCopy(this.mTransition);
               }
+              this.alterflag = false;
               this.mTransition.label = this.labelName;
               this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
               this.drawInvoker.update([this.mTransition]);

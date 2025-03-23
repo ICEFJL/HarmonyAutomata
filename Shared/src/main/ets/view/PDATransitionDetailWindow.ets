@@ -8,6 +8,7 @@ import { IDraw } from '../viewmodel/IDraw';
 export struct PDATransitionDetailWindow {
   @Consume mTransition: DrawTransition;
   @Consume firstCreate: boolean;
+  @Consume alterflag: boolean;
   @Consume drawInvoker: DrawInvoker;
 
   //为统一接口:此处保留labelName,拆分labelName为readSymbol:popSymbol;pushSymbol
@@ -98,9 +99,10 @@ export struct PDATransitionDetailWindow {
             .height("100%")
             .layoutWeight(1)
             .onClick(() => {
-              if(!this.firstCreate){
+              if(!this.firstCreate && !this.alterflag){
                 this.mTransition = DrawTransition.deepCopy(this.mTransition);
               }
+              this.alterflag = false;
 
               //合并为labelName
               if(this.readSymbol=="") this.readSymbol="ε";

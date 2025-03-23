@@ -8,6 +8,7 @@ import { IDraw } from '../viewmodel/IDraw';
 export struct TuringTransitionDetailWindow {
   @Consume mTransition: DrawTransition;
   @Consume firstCreate: boolean;
+  @Consume alterflag: boolean;
   @Consume drawInvoker: DrawInvoker;
 
   //为统一接口:此处保留labelName,拆分labelName为readSymbol:writeSymbol;moveDirection
@@ -124,9 +125,10 @@ export struct TuringTransitionDetailWindow {
             .height("100%")
             .layoutWeight(1)
             .onClick(() => {
-              if(!this.firstCreate){
+              if(!this.firstCreate && !this.alterflag){
                 this.mTransition = DrawTransition.deepCopy(this.mTransition);
               }
+              this.alterflag = false;
               //合并为labelName
               if(this.readSymbol=="") this.readSymbol="ε";
               if(this.writeSymbol=="") this.writeSymbol="ε";
