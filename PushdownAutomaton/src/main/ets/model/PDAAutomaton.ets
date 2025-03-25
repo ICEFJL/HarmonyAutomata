@@ -1,8 +1,8 @@
-import { State,AutomatonType, Const, SavedFile, DrawInvoker } from 'shared'
+import { State,AutomatonType, Const, SavedFile, DrawInvoker, IDraw, DrawState, DrawTransition } from 'shared'
 import {PDATransition} from './PDATransition'
 import 'reflect-metadata';
 import { Uuid } from 'shared/src/main/ets/automaton/function/Uuid'
-import { instanceToPlain } from 'class-transformer';
+import { instanceToPlain, plainToClass } from 'class-transformer';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { LogUtil } from '@pura/harmony-utils';
 
@@ -469,7 +469,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       return JSON.stringify(instanceToPlain(this));
     } catch (err) {
       let error = err as BusinessError;
-      console.error(`BaseTuringMachine-beanToJsonStr-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      console.error(`PDAAutomaton-beanToJsonStr-异常 ~ code: ${error.code} -·- message: ${error.message}`);
       return "";
     }
   }
@@ -502,6 +502,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       })
     });
     pda.initializeAlphabet();
+    pda.removeUnconnectedStates();
     return pda;
   }
 
@@ -527,7 +528,109 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
     });
   }
 
+  public drawPDAAutomaton(draw: DrawInvoker) {
+    let drawArray: Array<IDraw> = [];
+    const states = this.getStates();
+    for (const state of states) {
+      if(state.uuid == this.initialState?.uuid){
+        draw.initialState = new DrawState(state, true);
+        drawArray.push(draw.initialState);
+      }else{
+        drawArray.push(new DrawState(state, false));
+      }
+    }
+    const transitions = this.getTransitions();
+    for (const transition of transitions) {
+      const label = transition.label;
+      const fromState = this.getStateWithUuid(transition.from);
+      const toState = this.getStateWithUuid(transition.to);
+      if(!fromState || !toState){
+        continue;
+      }
+      drawArray.push(new DrawTransition(fromState, toState, label));
+    }
+    draw.update(drawArray);
+  }
+
+  public static loadFromFile(dirPath: string = "", fileName: string = "test"): PDAAutomaton<State, PDATransition> {
+    try {
+      let bufferStr = SavedFile.loadFromFile(dirPath, fileName + Const.FILE_POSTFIX);
+      return PDAAutomaton.deserialize(bufferStr);
+    } catch (err) {
+      let error =err as BusinessError;
+      LogUtil.error(`PDAAutomaton-loadFromFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      throw new Error('Failed to load automaton from file');
+    }
+  }
+
+  public static deserialize(automatonJSON: string): PDAAutomaton<State, PDATransition> {
+    try {
+      const plainObject = plainToClass(PDAAutomaton, JSON.parse(automatonJSON), { exposeDefaultValues: true });
+
+      if (plainObject === null) {
+        throw new Error('Invalid JSON input for PDAAutomaton');
+      }
+
+      // 嵌套对象从Object转为具体对象
+      plainObject.initialState = plainToClass(State, plainObject.initialState, { exposeDefaultValues: true });
+      plainObject.currentState=plainToClass(State, plainObject.currentState, { exposeDefaultValues: true });
+
+      // 手动将 Array 转换为 Set
+      let states = new Set(plainObject.states);
+      let transitions = new Set(plainObject.transitions);
+      plainObject.states = new Set<State>();
+      plainObject.transitions = new Set<PDATransition>();
+      for (const state of states) {
+        plainObject.states.add(plainToClass(State, state, { exposeDefaultValues: true } ));
+      }
+      for (const transition of transitions) {
+        plainObject.transitions.add(plainToClass(PDATransition, transition, { exposeDefaultValues: true }));
+      }
+
+      //  手动转换为集合
+      let alphabets = plainObject.alphabet
+      plainObject.alphabet = new Set<string>(alphabets);
 
 
+      return plainObject;
+    } catch (err) {
+      let error = err as BusinessError;
+      LogUtil.error(`PDAAutomaton-deserialize-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      throw new Error('Failed to deserialize PDAAutomaton');
+    }
+  }
 
+  public static createExample(): PDAAutomaton<State, PDATransition> {
+    const pda = new PDAAutomaton();
+    pda.setName("(01)^n");
+    pda.setNote("Accept string (01)^n");
+
+    // 创建带唯一UUID的状态
+    const q0 = new State();
+    q0.setName("q0");
+    q0.setPosition(0, 0);
+    const q1 = new State();
+    q1.setName("q1");
+    q1.setPosition(100, 0);
+    const q2 = new State();
+    q1.setName("q2");
+    q1.setPosition(100, 100);
+
+    pda.addStates([q0, q1, q2]);
+    pda.setInitialState(q0);//初始状态
+    q2.isFinal = true; // 终止状态
+    // 定义转换规则
+    try {
+      pda.addTransitions([
+        new PDATransition(q0.uuid, q1.uuid, '0', 'ε', '0'),
+        new PDATransition(q1.uuid, q0.uuid, '1', '0', 'ε'),
+        new PDATransition(q0.uuid, q2.uuid, 'ε', 'ε', 'ε')
+      ]);
+    } catch (e) {
+      console.error("pda转移规则添加失败:", e.message);
+    }
+    pda.initializeAlphabet()
+    pda.initializeInput('0101');
+    return pda;
+  }
 }
