@@ -235,6 +235,7 @@ export struct DrawCanvas {
           return;
         }
         //替换
+        this.alterflag = true;
         this.selectTransitionWindow();
         break;
     }
