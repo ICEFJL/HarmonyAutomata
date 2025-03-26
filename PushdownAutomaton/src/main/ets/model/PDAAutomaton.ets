@@ -66,14 +66,14 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       if (transition.readSymbol !== 'ε') {
         this.alphabet.add(transition.readSymbol);
       }
-      // 弹出符号
-      if (transition.popSymbol !== 'ε') {
-        this.alphabet.add(transition.popSymbol);
-      }
-      // 推入符号
-      if (transition.pushSymbol !== 'ε') {
-        this.alphabet.add(transition.pushSymbol);
-      }
+      // // 弹出符号
+      // if (transition.popSymbol !== 'ε') {
+      //   this.alphabet.add(transition.popSymbol);
+      // }
+      // // 推入符号
+      // if (transition.pushSymbol !== 'ε') {
+      //   this.alphabet.add(transition.pushSymbol);
+      // }
     });
     // 将数组转成逗号分隔的字符串打印
     console.log("打印字母表", Array.from(this.alphabet).join(', '));
@@ -502,7 +502,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       })
     });
     pda.initializeAlphabet();
-    pda.removeUnconnectedStates();
+    //pda.removeUnconnectedStates();
     return pda;
   }
 
