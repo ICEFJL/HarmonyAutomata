@@ -1,6 +1,6 @@
-import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw} from 'shared'
+import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw,SavedFile,Const} from 'shared'
 import {TuringTransition} from './TuringTransition'
-import {FileUtil} from '@pura/harmony-utils';
+import {FileUtil,LogUtil} from '@pura/harmony-utils';
 import {TuringMachine} from './TuringMachine'
 import 'reflect-metadata';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
@@ -23,22 +23,24 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
       }
     });
     draw.transitionMap.forEach((transitions) => {
-      const transition = transitions[transitions.length - 1];
-      //为统一接口:此处保留labelName,拆分labelName为readSymbol:writeSymbol;moveDirection
-      //eg.读0写1,方向R;记为0,1;R
-      switch (transition.label[4]) {
-        case 'L': // 左移逻辑
-          tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'L'));
-          break;
-        case 'R': // 右移逻辑
-          tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'R'));
-          break;
-        case 'S': // 不动
-          tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'S'));
-          break;
-        default:  // 处理其他方向（无效输入）
-          console.error("wrong moveDirection!");
-          break;
+      for(let i=0;i < transitions.length;i++){
+        const transition = transitions[i];
+        //为统一接口:此处保留labelName,拆分labelName为readSymbol:writeSymbol;moveDirection
+        //eg.读0写1,方向R;记为0,1;R
+        switch (transition.label[4]) {
+          case 'L': // 左移逻辑
+            tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'L'));
+            break;
+          case 'R': // 右移逻辑
+            tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'R'));
+            break;
+          case 'S': // 不动
+            tm.addTransition(new TuringTransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],'S'));
+            break;
+          default:  // 处理其他方向（无效输入）
+            console.error("wrong moveDirection!");
+            break;
+        }
       }
     });
 
@@ -234,42 +236,29 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
       return JSON.stringify(instanceToPlain(this));
     } catch (err) {
       let error = err as BusinessError;
-      console.error(`BaseTuringMachine-beanToJsonStr-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      LogUtil.error(`BaseTuringMachine-beanToJsonStr-异常 ~ code: ${error.code} -·- message: ${error.message}`);
       return "";
     }
   }
 
-  public saveToFile(dirPath: string = "", fileName: string = "test.json"): void {
+  public saveToFile(dirPath: string = ""): void {
     try {
-      let path = FileUtil.getFilesDirPath(dirPath, fileName);
-      console.log("文件保存路径：",path);
-      let file = FileUtil.openSync(path);
-      let len = FileUtil.writeSync(file.fd, this.serialize())
-      FileUtil.closeSync(file.fd); //关闭文件
+      let jsonStr = this.serialize();
+      SavedFile.saveToFile(jsonStr, dirPath, this.name + Const.FILE_POSTFIX);
     } catch (err) {
       let error = err as BusinessError;
-      console.error(`BaseTuringMachine-saveToFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);
-      throw new Error('Failed to save TuringMachine to file');
+      LogUtil.error(`BaseTuringMachine-saveToFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);
     }
   }
 
 
-  public static loadFromFile(dirPath: string = "", fileName: string = "test.json"): BaseTuringMachine {
+  public static loadFromFile(dirPath: string = "", fileName: string = "test"): BaseTuringMachine {
     try {
-      let filePath = FileUtil.getFilesDirPath(dirPath, fileName);
-      console.log("文件加载路径：",filePath);
-      let readTextOptions: ReadTextOptions = {
-        offset: 0,
-        length: 0,
-        encoding: 'utf-8'
-      };
-      let stat = fs.statSync(filePath);
-      readTextOptions.length = stat.size;
-      let bufferStr = fs.readTextSync(filePath, readTextOptions);
+      let bufferStr = SavedFile.loadFromFile(dirPath, fileName + Const.FILE_POSTFIX);
       return BaseTuringMachine.deserialize(bufferStr);
     } catch (err) {
       let error =err as BusinessError;
-      console.error(`BaseTuringMachine-loadFromFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);
+      LogUtil.error(`BaseTuringMachine-loadFromFile-异常 ~ code: ${error.code} -·- message: ${error.message}`);
       throw new Error('Failed to load TuringMachine from file');
     }
   }
