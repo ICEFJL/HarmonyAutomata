@@ -54,7 +54,7 @@ export class Const {
 
   // 路由相关
   static readonly BUNDLE_NAME = 'com.example.bishe'
-  static readonly FUNCTION: string[] = ['有穷自动机','上下文无关','正则','图灵机','管理']
+  static readonly FUNCTION: string[] = ['有穷自动机','下推自动机','正则','图灵机','管理']
   static readonly FUNCTION_URL_MAP: Map<string, string> = new Map([
     [this.FUNCTION[0], FunctionUrl.FA],
     [this.FUNCTION[1], FunctionUrl.PA],
