@@ -48,7 +48,10 @@ export default class DrawInvoker {
       const nKey = DrawInvoker.createKey(command.toState.uuid, command.fromState.uuid);
       if (this.transitionMap.has(nKey)) {
         let transitionArray = this.transitionMap.get(nKey)!;
-        transitionArray[transitionArray.length - 1].needOffset = flag;
+        transitionArray.forEach((item)=>{
+          item.needOffset = flag;
+        })
+        //transitionArray[transitionArray.length - 1].needOffset = flag;
         if(type === DrawType.UPDATE){
           command.needOffset = flag;
         }
@@ -86,6 +89,8 @@ export default class DrawInvoker {
             }
           }
         }
+
+        drawArray = Array.from(new Set<IDraw>(drawArray));
         draw = new DrawOperate(drawArray, type);
         this.drawList.push(draw);
         this.pop(draw);

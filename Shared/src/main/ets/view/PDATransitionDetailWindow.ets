@@ -22,9 +22,11 @@ export struct PDATransitionDetailWindow {
 
   aboutToAppear(): void {
     if(this.mTransition.label.length>1){
-      this.readSymbol = this.mTransition.label[0];
-      this.popSymbol = this.mTransition.label[2];
-      this.labelName = this.mTransition.label[4];
+      if(this.alterflag){
+        this.readSymbol = this.mTransition.label[0];
+        this.popSymbol = this.mTransition.label[2];
+        this.labelName = this.mTransition.label[4];
+      }
     }
     else{
       this.labelName = this.mTransition.label;
@@ -88,6 +90,7 @@ export struct PDATransitionDetailWindow {
             .fontColor("#317ef5")
             .onClick(() => {
               this.controller.close(); // 关闭弹窗
+              this.alterflag = false;
             })
           Text()
             .size({width: "2px", height: "100%"})
