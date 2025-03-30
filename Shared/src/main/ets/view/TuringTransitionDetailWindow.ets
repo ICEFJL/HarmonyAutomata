@@ -162,6 +162,7 @@ export struct TuringTransitionDetailWindow {
             .fontColor("#317ef5")
             .onClick(() => {
               this.controller.close(); // 关闭弹窗
+              this.alterflag = false;
             })
         }
         .height(45)
