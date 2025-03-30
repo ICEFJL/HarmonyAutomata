@@ -1,5 +1,5 @@
 import { FileUtil } from '@pura/harmony-utils';
-import {SavedFile} from '../automaton/SavedFile'
+import {SavedFile} from '../common/SavedFile'
 import { AutomatonType } from "./Type";
 
 export class FileManager {
