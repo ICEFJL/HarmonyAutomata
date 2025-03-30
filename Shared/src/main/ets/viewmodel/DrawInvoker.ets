@@ -85,7 +85,12 @@ export default class DrawInvoker {
           } else if(command instanceof DrawTransition){
             const key = DrawInvoker.createKey(command.fromState.uuid, command.toState.uuid);
             if (this.transitionMap.has(key)) {
-              drawArray.push(...this.transitionMap.get(key)!);
+              let transitions = this.transitionMap.get(key)!;
+              for (let t of transitions){
+                if(t.label === command.label)
+                  drawArray.push(t);
+              }
+              //drawArray.push(...this.transitionMap.get(key)!);
             }
           }
         }
@@ -150,7 +155,17 @@ export default class DrawInvoker {
       } else if (command instanceof DrawTransition) {
         const key = DrawInvoker.createKey(command.fromState.uuid, command.toState.uuid);
         const transitionArray = this.transitionMap.get(key)!;
-        transitionArray.pop();
+        // 查找符合条件的转换
+        const transitionToRemove = transitionArray.find(t => t.label === command.label);
+        // 如果找到了转换，则执行删除操作
+        if (transitionToRemove) {
+          // 从数组中删除这个转换
+          const index = transitionArray.indexOf(transitionToRemove);
+          if (index !== -1) {
+            transitionArray.splice(index, 1); // 删除该转换
+          }
+        }
+        //transitionArray.pop();
         if (transitionArray.length === 0) {
           this.transitionMap.delete(key);
           tempArray.push(command);
