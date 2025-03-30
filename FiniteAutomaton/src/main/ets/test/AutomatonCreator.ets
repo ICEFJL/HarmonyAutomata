@@ -1,5 +1,67 @@
 import {FSAAutomaton, State, Transition} from 'shared';
 
+interface FSAConfig {
+    states: string[];          // 状态列表
+    alphabet: string[];        // 输入符号集合
+    transitions: Record<string, Record<string, string[]>>; // 状态转移表
+    initial_state: string;     // 初始状态名称
+    final_states: string[];    // 终止状态列表
+}
+
+const easyFSA: FSAConfig = {
+    states: ['s0', 's1'],
+    alphabet: [''],
+    transitions: {
+        's0': {'': ['s1']}
+    },
+    initial_state: 's0',
+    final_states: ['s1']
+};
+
+const normalFSA: FSAConfig = {
+    states: ['s0', 's1', 's2'],
+    alphabet: ['0', '1'],
+    transitions: {
+        's0': {'0': ['s0'], '1': ['s1']},
+        's1': {'0': ['s2'], '1': ['s0']},
+        's2': {'0': ['s2'], '1': ['s0']}
+    },
+    initial_state: 's0',
+    final_states: ['s0']
+};
+
+const nfaToDFATestFSA: FSAConfig = {
+    states: ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9'],
+    alphabet: ['a', 'b'],
+    transitions: {
+        's0': {'': ['s1', 's7']},
+        's1': {'': ['s2', 's4']},
+        's2': {'a': ['s3']},
+        's3': {'': ['s6']},
+        's4': {'b': ['s5']},
+        's5': {'': ['s6']},
+        's6': {'': ['s7', 's1']},
+        's7': {'a': ['s8']},
+        's8': {'b': ['s9']}
+    },
+    initial_state: 's0',
+    final_states: ['s9']
+};
+
+const minDFATestFSA: FSAConfig = {
+    states: ['s0', 's1', 's2', 's3', 's4'],
+    alphabet: ['a', 'b'],
+    transitions: {
+        's0': {'a': ['s1'], 'b': ['s3']},
+        's1': {'a': ['s2'], 'b': ['s1']},
+        's2': {'a': ['s2'], 'b': ['s1']},
+        's3': {'a': ['s4'], 'b': ['s3']},
+        's4': {'a': ['s4'], 'b': ['s3']}
+    },
+    initial_state: 's0',
+    final_states: ['s1', 's2']
+};
+
 export class AutomatonCreator {
 
     static easyFSA: FSAAutomaton | null = null;
@@ -8,89 +70,81 @@ export class AutomatonCreator {
 
     static nfaToDFATestFSA: FSAAutomaton | null = null;
 
+    static minDFATestFSA: FSAAutomaton | null = null;
+
+    public static createFromDFA(dfa: FSAConfig): FSAAutomaton {
+        const automaton = new FSAAutomaton();
+        const stateMap = new Map<string, State>(); // 状态名称到State对象的映射
+
+        // 1. 创建所有状态
+        dfa.states.forEach(stateName => {
+            const state = new State();
+            state.setName(stateName); // 设置状态名称
+            stateMap.set(stateName, state);
+            automaton.addState(state); // 单个添加状态
+        });
+
+        // 2. 设置初始状态
+        const initialState = stateMap.get(dfa.initial_state);
+        if (!initialState) throw new Error(`初始状态 ${dfa.initial_state} 不存在`);
+        automaton.setInitialState(initialState);
+
+        // 3. 创建转移
+        const transitions: Transition[] = [];
+        for (const entry of Object.entries(dfa.transitions)) {
+            const fromState = entry[0]; // 获取状态名称
+            const transitionsMap = entry[1]; // 获取对应的状态转移映射
+            for (const transitionEntry of Object.entries(transitionsMap)) {
+                const symbol = transitionEntry[0]; // 输入符号
+                const toStates = transitionEntry[1]; // 目标状态名称
+                const fromStateObj = stateMap.get(fromState);
+                for(const toState of toStates){
+                    const toStateObj = stateMap.get(toState);
+                    if (!fromStateObj || !toStateObj) {
+                        throw new Error(`状态 ${fromState} 或 ${toState} 不存在`);
+                    }
+                    const transition = new Transition(fromStateObj.uuid, toStateObj.uuid);
+                    transition.setLabel(symbol);
+                    transitions.push(transition);
+                }
+            }
+        }
+        automaton.addTransitions(transitions); // 批量添加转移
+
+        // 4. 设置终止状态
+        dfa.final_states.forEach(finalStateName => {
+            const state = stateMap.get(finalStateName);
+            if (state) state.isFinal = true;
+        });
+
+        return automaton;
+    }
+
     public static getEasyFSA(): FSAAutomaton {
         if (!AutomatonCreator.easyFSA) {
-            AutomatonCreator.easyFSA = new FSAAutomaton();
-            const state1 = new State();
-            const state2 = new State();
-            const transition1 = new Transition(state1.uuid, state2.uuid);
-            transition1.setLabel('');
-            AutomatonCreator.easyFSA.addStates([state1, state2]);
-            AutomatonCreator.easyFSA.addTransition(transition1);
-            AutomatonCreator.easyFSA.setInitialState(state1);
-            state2.isFinal = true;
+            AutomatonCreator.easyFSA = AutomatonCreator.createFromDFA(easyFSA);
         }
         return AutomatonCreator.easyFSA;
     }
 
     public static getNormalFSA(): FSAAutomaton {
         if (!AutomatonCreator.normalFSA) {
-            AutomatonCreator.normalFSA = new FSAAutomaton();
-            const state1 = new State();
-            const state2 = new State();
-            const state3 = new State();
-            const transition1 = new Transition(state1.uuid, state1.uuid);
-            transition1.setLabel('0');
-            const transition2 = new Transition(state1.uuid, state2.uuid);
-            transition2.setLabel('1');
-            const transition3 = new Transition(state2.uuid, state1.uuid);
-            transition3.setLabel('1');
-            const transition4 = new Transition(state2.uuid, state2.uuid);
-            transition4.setLabel('0');
-            const transition5 = new Transition(state3.uuid, state3.uuid);
-            transition5.setLabel('0');
-            const transition6 = new Transition(state3.uuid, state1.uuid);
-            transition6.setLabel('1');
-            AutomatonCreator.normalFSA.addStates([state1, state2, state3]);
-            AutomatonCreator.normalFSA.addTransitions([transition1, transition2, transition3, transition4, transition5, transition6]);
-            AutomatonCreator.normalFSA.setInitialState(state1);
-            state1.isFinal = true;
+            AutomatonCreator.normalFSA = AutomatonCreator.createFromDFA(normalFSA);
         }
         return AutomatonCreator.normalFSA;
     }
 
     public static getNfaToDFATestFSA(): FSAAutomaton {
         if (!AutomatonCreator.nfaToDFATestFSA) {
-            AutomatonCreator.nfaToDFATestFSA = new FSAAutomaton();
-            const statesList: State[] = [];
-            for (let i = 0; i < 10; i++) {
-                const state = new State();
-                statesList.push(state);
-                state.setName(`s${i}`);
-                AutomatonCreator.nfaToDFATestFSA.addState(state);
-            }
-            const transition1 = new Transition(statesList[0].uuid, statesList[1].uuid);
-            transition1.setLabel('');
-            const transition2 = new Transition(statesList[0].uuid, statesList[7].uuid);
-            transition2.setLabel('');
-            const transition3 = new Transition(statesList[1].uuid, statesList[2].uuid);
-            transition3.setLabel('');
-            const transition4 = new Transition(statesList[1].uuid, statesList[4].uuid);
-            transition4.setLabel('');
-            const transition5 = new Transition(statesList[2].uuid, statesList[3].uuid);
-            transition5.setLabel('a');
-            const transition6 = new Transition(statesList[3].uuid, statesList[6].uuid);
-            transition6.setLabel('');
-            const transition7 = new Transition(statesList[4].uuid, statesList[5].uuid);
-            transition7.setLabel('b');
-            const transition8 = new Transition(statesList[5].uuid, statesList[6].uuid);
-            transition8.setLabel('');
-            const transition9 = new Transition(statesList[6].uuid, statesList[7].uuid);
-            transition9.setLabel('');
-            const transition10 = new Transition(statesList[6].uuid, statesList[1].uuid);
-            transition10.setLabel('');
-            const transition11 = new Transition(statesList[7].uuid, statesList[8].uuid);
-            transition11.setLabel('a');
-            const transition12 = new Transition(statesList[8].uuid, statesList[9].uuid);
-            transition12.setLabel('b');
-            AutomatonCreator.nfaToDFATestFSA.addTransitions([
-                transition1, transition2, transition3, transition4, transition5,
-                transition6, transition7, transition8, transition9, transition10,
-                transition11, transition12
-            ]);
-            AutomatonCreator.nfaToDFATestFSA.setInitialState(statesList[0]);
-            statesList[9].isFinal = true;
+            AutomatonCreator.nfaToDFATestFSA = AutomatonCreator.createFromDFA(nfaToDFATestFSA);
         }
         return AutomatonCreator.nfaToDFATestFSA;
+    }
+
+    public static getMinDFATestFSA(): FSAAutomaton {
+        if (!AutomatonCreator.minDFATestFSA) {
+            AutomatonCreator.minDFATestFSA = AutomatonCreator.createFromDFA(minDFATestFSA);
+        }
+        return AutomatonCreator.minDFATestFSA;
     }
 }

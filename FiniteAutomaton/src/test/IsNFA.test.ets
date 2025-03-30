@@ -2,8 +2,8 @@ import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from
 import {NFA} from '../main/ets/function/NFA'
 import { AutomatonCreator } from '../main/ets/test/AutomatonCreator'
 
-export default function AutomatonCheckerTestTest() {
-  describe('AutomatonCheckerTestTest', () => {
+export default function IsNFATest() {
+  describe('IsNFATest', () => {
     // Defines a test suite. Two parameters are supported: test suite name and test suite function.
     beforeAll(() => {
       // Presets an action, which is performed only once before all test cases of the test suite start.
@@ -36,6 +36,10 @@ export default function AutomatonCheckerTestTest() {
     it('nfaToDfaTestAutomatonIsNFA', 0, () => {
       let a = NFA.isNFA(AutomatonCreator.getNfaToDFATestFSA())
       expect(a).assertTrue()
+    })
+    it('minDfaTestAutomatonIsNFA', 0, () => {
+      let a = NFA.isNFA(AutomatonCreator.getMinDFATestFSA())
+      expect(a).assertFalse()
     })
   })
 }
