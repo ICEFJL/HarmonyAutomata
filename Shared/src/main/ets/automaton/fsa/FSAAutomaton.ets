@@ -10,7 +10,7 @@ import DrawInvoker from '../../viewmodel/DrawInvoker';
 import { DrawState } from '../../viewmodel/DrawState';
 import { DrawTransition } from '../../viewmodel/DrawTransition';
 import { IDraw } from '../../viewmodel/IDraw';
-import { Const, SavedFile } from '../../../../../Index';
+import { Const, DrawType, SavedFile } from '../../../../../Index';
 import { FSAState } from './simulateFSA';
 
 export class FSAAutomaton extends Automaton<State, Transition> {
@@ -78,6 +78,13 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       }
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
+    let delArray: Array<IDraw> = [];
+    for(let items of draw.transitionMap.values()){
+      for(let item of items){
+        delArray.push(item)
+      }
+    }
+    draw.update(delArray, DrawType.DELETE);
     draw.update(drawArray);
   }
 

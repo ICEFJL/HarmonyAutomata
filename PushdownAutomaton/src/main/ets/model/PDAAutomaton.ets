@@ -1,4 +1,4 @@
-import { State,AutomatonType, Const, SavedFile, DrawInvoker, IDraw, DrawState, DrawTransition } from 'shared'
+import { State,AutomatonType, Const, SavedFile, DrawInvoker, IDraw, DrawState, DrawTransition, DrawType } from 'shared'
 import {PDATransition} from './PDATransition'
 import 'reflect-metadata';
 import { Uuid } from 'shared/src/main/ets/automaton/function/Uuid'
@@ -549,6 +549,13 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       }
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
+    let delArray: Array<IDraw> = [];
+    for(let items of draw.transitionMap.values()){
+      for(let item of items){
+        delArray.push(item)
+      }
+    }
+    draw.update(delArray, DrawType.DELETE);
     draw.update(drawArray);
   }
 

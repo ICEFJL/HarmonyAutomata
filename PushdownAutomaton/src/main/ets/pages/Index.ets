@@ -50,7 +50,8 @@ struct PDAComponent {
   });
 
   private simulateWindow: CustomDialogController = new CustomDialogController({
-    builder: SimulateWindow({ action: (input: string) => this.simulate(input) }), // 弹框的构造器
+    builder: SimulateWindow({ action: (input: string) => this.simulate(input) }), //
+    // 弹框的构造器
     cancel: () => {
       console.log("cancel")         // 点击蒙层的回调
     },
@@ -88,7 +89,7 @@ struct PDAComponent {
   }
 
   endUpdate(){
-    this.drawInvoker.clearAll(); // 清空旧的绘制内容
+    //this.drawInvoker.clearAll(); // 清空旧的绘制内容
     this.pda.drawPDAAutomaton(this.drawInvoker);
     this.index = Const.NONE;
     this.update = !this.update;
@@ -135,7 +136,7 @@ struct PDAComponent {
   }
 
   @Builder
-  TMMenu(){
+  PDAMenu(){
     Menu() {
       MenuItem({ content: '保存文件' })
         .onClick(() => {
@@ -164,6 +165,7 @@ struct PDAComponent {
         })
       MenuItem({ content: '自动布局' })
         .onClick(() => {
+          console.log("自动布局")
           this.pda = PDAAutomaton.getAutomaton(this.drawInvoker);
           this.pda = this.gemLayoutAlgorithm.process(this.pda) as PDAAutomaton<State, PDATransition>;
           if(this.pda.update){
@@ -178,7 +180,7 @@ struct PDAComponent {
     Image($r('app.media.icon_menu'))
       .width(48)
       .height(48)
-      .bindMenu(this.TMMenu())
+      .bindMenu(this.PDAMenu())
   }
 
   build() {
