@@ -1,11 +1,11 @@
 import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw,SavedFile,Const} from 'shared'
 import {TuringTransition} from './TuringTransition'
-import {FileUtil,LogUtil} from '@pura/harmony-utils';
+import {LogUtil} from '@pura/harmony-utils';
 import {TuringMachine} from './TuringMachine'
 import 'reflect-metadata';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { fileIo as fs, ReadTextOptions } from '@kit.CoreFileKit';
+import {StepLog,TuringResult} from './runResultLog'
 
 export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   constructor() {
@@ -176,7 +176,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   }
 
 
-  public static createExample(): BaseTuringMachine {
+  public createExample(): BaseTuringMachine {
     const tm = new BaseTuringMachine();
     tm.setName("BitFlipTM");
     tm.setNote("Inverts binary digits (0↔1, e.g. '101' → '010')");
@@ -309,6 +309,78 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     }
   }
 
+  //去除字符串尾部连续ε和[]
+  public getFinalTape(str: string): string {
+    //先去除[]
+    // 转换为字符数组并过滤
+    const charArray = Array.from(str);
+    const filtered1= charArray.filter(c => c !== '[');
+    const filtered2= filtered1.filter(c => c !== ']');
+    // 重新组合为字符串
+    str=filtered2.join('');
+    let end = str.length - 1;
+    // 从末尾向前遍历，找到第一个非空字符位置
+    while (end >= 0 && str.charAt(end) === 'ε') {
+      end--;
+    }
+    // 截取子字符串
+    return str.substring(0, end + 1);
+  }
+
+  //存储单带图灵机仿真过程
+  public runResultLog(): TuringResult {
+    const logEntries: StepLog[] = []; // 显式声明数组类型[3](@ref)
+    let stepCount = 0;
+
+    try {
+      // 记录初始状态（step 0）
+      logEntries.push({
+        step: stepCount,
+        currentState:this.getCurrentStateName(),
+        transition:this.getCurrentTransitionName(),
+        head: this.headPosition,
+        tape: this.getCurrentTape()
+      });
+
+      console.log(`Step ${stepCount}:`);
+      console.log("Initial Tape:", this.getCurrentTape());
+      console.log("Head Position:", this.headPosition);
+      console.log("CurrentSymbol:", this.getCurrentSymbol());
+
+      // 执行状态转换
+      while (this.step()) {
+        stepCount++;
+        logEntries.push({
+          step: stepCount,
+          head: this.headPosition,
+          currentState:this.getCurrentStateName(),
+          transition: this.getCurrentTransitionName(),
+          tape: this.getCurrentTape()
+        });
+        console.log(`Step ${stepCount}:`);
+        console.log("Head Position:", this.headPosition+1);
+        console.log("Current Symbol:", this.getCurrentSymbol());
+        console.log("Tape:", this.getCurrentTape());
+        console.log("-------------------");
+      }
+    } catch (e) {
+      // 异常处理（类型安全）
+      const errorMsg = e instanceof Error ? e.message : 'Unknown execution error';
+      return {
+        logs: logEntries,
+        error: `Execution failed: ${errorMsg}`, // 错误信息格式化
+        finalTape: this.getFinalTape(this.getCurrentTape()),
+        finalStep:stepCount
+      };
+    }
+
+    return {
+      logs: logEntries,
+      finalTape: this.getFinalTape(this.getCurrentTape()),
+      finalStep:stepCount
+    };
+
+  }
 
 }
 

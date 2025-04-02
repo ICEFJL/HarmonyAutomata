@@ -18,6 +18,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   protected blank: string = 'ε';
   protected currentTape: string = "";
   protected currentState: S | null;
+  private currentTransition: T | null = null;
   // 自动机的初始状态
   initialState: S | null;
   note: string;
@@ -85,6 +86,36 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   public setName(name: string): void {
     this.name = name;
+  }
+
+  public getCurrentTransition(): T | null {
+    return this.currentTransition;
+  }
+
+  public  getCurrentStateName():string{
+    if(this.currentState==null){
+      return "NULL";
+    }
+    else return this.currentState.name;
+  }
+
+  public  getCurrentTransitionName():string{
+    if(this.currentTransition==null){
+      return "NULL";
+    }
+    else{
+      switch (this.currentTransition.moveDirection) {
+        case 'L': // 左移逻辑
+          return '读'+this.currentTransition.label[0]+'写'+this.currentTransition.label[2]+'左移'
+        case 'R': // 右移逻辑
+          return '读'+this.currentTransition.label[0]+'写'+this.currentTransition.label[2]+'右移'
+        case 'S': // 不动
+          return '读'+this.currentTransition.label[0]+'写'+this.currentTransition.label[2]+'不动'
+        default:  // 处理其他方向（如不移动或无效输入）
+          console.error("wrong moveDirection!");
+          return "undefined";
+      }
+    }
   }
 
   /** 获取当前纸带可视化字符串 */
@@ -243,9 +274,10 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     }
 
     const transition = validTransitions[0];
+    this.currentTransition = transition; // 记录当前转移规则
 
     // 执行转移操作
-    // 修改后的写入逻辑
+    // 写入逻辑
     if (transition.writeSymbol !== this.blank) {
       this.tape.set(this.headPosition, transition.writeSymbol);
     } else {
@@ -268,6 +300,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     const newState = Array.from(this.states).find(s => s.uuid === transition.to);
     this.currentState = newState || null;
 
+
     this.updateTapeString();
 
     return true;
@@ -275,6 +308,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   /** 完全重置计算状态 */
   public reset(): void {
+    this.currentTransition = null;
     this.currentState = this.initialState;
     this.headPosition = 0;
     this.tape.clear();
