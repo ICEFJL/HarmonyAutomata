@@ -9,6 +9,10 @@ export struct Save{
     switch (type) {
       case AutomatonType.FSA:
       case AutomatonType.NFA:
+      case AutomatonType.PDA:
+        return FunctionUrl.PA
+      case AutomatonType.TM:
+        return FunctionUrl.TM
       case AutomatonType.DFA:
         return FunctionUrl.FA
       default:
@@ -20,6 +24,8 @@ export struct Save{
     switch (type) {
       case AutomatonType.FSA:
       case AutomatonType.NFA:
+      case AutomatonType.TM:
+        return 'Index'
       case AutomatonType.DFA:
         return 'Index'
       default:

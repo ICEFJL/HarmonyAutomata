@@ -12,6 +12,30 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     super(AutomatonType.TM);
   }
 
+  public drawTM(draw: DrawInvoker) {
+    let drawArray: Array<IDraw> = [];
+    const states = this.getStates();
+    for (const state of states) {
+      if (state.uuid == this.initialState?.uuid) {
+        draw.initialState = new DrawState(state, true);
+        drawArray.push(draw.initialState);
+      } else {
+        drawArray.push(new DrawState(state, false));
+      }
+    }
+    const transitions = this.getTransitions();
+    for (const transition of transitions) {
+      const label = transition.label;
+      const fromState = this.getStateWithUuid(transition.from);
+      const toState = this.getStateWithUuid(transition.to);
+      if (!fromState || !toState) {
+        continue;
+      }
+      drawArray.push(new DrawTransition(fromState, toState, label));
+    }
+    draw.update(drawArray);
+  }
+
   public static getTuringMachine(draw: DrawInvoker): BaseTuringMachine{
     const tm = new BaseTuringMachine();
     draw.stateMap.forEach((states) => {

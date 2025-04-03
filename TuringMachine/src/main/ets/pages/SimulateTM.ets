@@ -36,8 +36,8 @@ struct SimulateTM {
 
   onPageShow() {
     const data: string = this.params['data'];
-    //this.tm=BaseTuringMachine.deserialize(data);
-    this.tm = this.tm.createExample();
+    this.tm = BaseTuringMachine.deserialize(data);
+    //this.tm = this.tm.createExample();
     this.showStates = this.tm.showStates();
     this.showInitialState = this.tm.showInitialState();
     this.showFinalStates = this.tm.showFinalStates();

@@ -118,42 +118,6 @@ export struct TuringTransitionDetailWindow {
           .margin({top: 10})
 
         Row() {
-          Text("确认")
-            .textAlign(TextAlign.Center)
-            .fontSize(18)
-            .fontColor("#317ef5")
-            .height("100%")
-            .layoutWeight(1)
-            .onClick(() => {
-              if(!this.firstCreate && !this.alterflag){
-                this.mTransition = DrawTransition.deepCopy(this.mTransition);
-              }
-              this.alterflag = false;
-              //合并为labelName
-              if(this.readSymbol=="") this.readSymbol="ε";
-              if(this.writeSymbol=="") this.writeSymbol="ε";
-              if(this.isR){
-                this.labelName=this.readSymbol+","+this.writeSymbol+";"+"R";
-              }
-              else if(this.isL){
-                this.labelName=this.readSymbol+","+this.writeSymbol+";"+"L";
-              }
-              else if(this.isS){
-                this.labelName=this.readSymbol+","+this.writeSymbol+";"+"S";
-              }
-              else {
-                console.error("未选择移动方向！");
-              }
-              console.log("TuringTransitionDetailWindow 已设置 labelName ：",this.labelName);
-              this.mTransition.label = this.labelName;
-              //this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
-              this.drawInvoker.update([this.mTransition]);
-              this.endUpdate();
-              this.controller.close(); // 关闭弹窗
-            })
-          Text()
-            .size({width: "2px", height: "100%"})
-            .backgroundColor("#bebbc1")
           Text("取消")
             .height("100%")
             .layoutWeight(1)
@@ -163,6 +127,43 @@ export struct TuringTransitionDetailWindow {
             .onClick(() => {
               this.controller.close(); // 关闭弹窗
               this.alterflag = false;
+            })
+          Text()
+            .size({width: "2px", height: "100%"})
+            .backgroundColor("#bebbc1")
+          Text("确认")
+            .textAlign(TextAlign.Center)
+            .fontSize(18)
+            .fontColor("#317ef5")
+            .height("100%")
+            .layoutWeight(1)
+            .onClick(() => {
+              if (!this.firstCreate && !this.alterflag) {
+                this.mTransition = DrawTransition.deepCopy(this.mTransition);
+              }
+              this.alterflag = false;
+              //合并为labelName
+              if (this.readSymbol == "") {
+                this.readSymbol = "ε";
+              }
+              if (this.writeSymbol == "") {
+                this.writeSymbol = "ε";
+              }
+              if (this.isR) {
+                this.labelName = this.readSymbol + "," + this.writeSymbol + ";" + "R";
+              } else if (this.isL) {
+                this.labelName = this.readSymbol + "," + this.writeSymbol + ";" + "L";
+              } else if (this.isS) {
+                this.labelName = this.readSymbol + "," + this.writeSymbol + ";" + "S";
+              } else {
+                console.error("未选择移动方向！");
+              }
+              console.log("TuringTransitionDetailWindow 已设置 labelName ：", this.labelName);
+              this.mTransition.label = this.labelName;
+              //this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
+              this.drawInvoker.update([this.mTransition]);
+              this.endUpdate();
+              this.controller.close(); // 关闭弹窗
             })
         }
         .height(45)

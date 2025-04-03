@@ -44,6 +44,7 @@ struct TMComponent {
   }
 
   private endUpdate(){
+    this.tm.drawTM(this.drawInvoker);
     this.index = Const.NONE;
     this.update = !this.update;
   }
@@ -60,7 +61,7 @@ struct TMComponent {
       this.saveFile = new SavedFile(this.name, this.note, this.tm.type);
       this.saveFile.save();
     }
-   // this.clearAll();
+    this.clearAll();
     this.endUpdate();
   }
 
