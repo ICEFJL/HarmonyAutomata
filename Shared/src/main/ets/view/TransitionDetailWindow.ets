@@ -52,6 +52,7 @@ export struct TransitionDetailWindow {
             .fontColor("#317ef5")
             .onClick(() => {
               this.controller.close(); // 关闭弹窗
+              this.alterflag = false;
             })
           Text()
             .size({width: "2px", height: "100%"})

@@ -10,7 +10,7 @@ git除主分支外，还有5条分支，分别对应5个模块，其名称分别
 
 ## 多HAP开发和路由跳转
 
-可参考[MultiHap: 本示例展示多HAP开发，简单介绍了多HAP的使用场景，应用包含了一个entry HAP和两个feature HAP，两个feature HAP分别提供了音频和视频播放组件，entry中使用了音频和视频播放组件。 三个模块需要安装三个hap包，最终会在设备上安装一个主entry的hap包。](https://gitee.com/harmonyos_samples/multi-hap)
+如需从entry模块启动多hap，可参考[MultiHap: 本示例展示多HAP开发，简单介绍了多HAP的使用场景，应用包含了一个entry HAP和两个feature HAP，两个feature HAP分别提供了音频和视频播放组件，entry中使用了音频和视频播放组件。 三个模块需要安装三个hap包，最终会在设备上安装一个主entry的hap包。](https://gitee.com/harmonyos_samples/multi-hap)的使用说明的第二步
 
 路由跳转需要修改对应模块下的UIAbility文件，具体修改onCreate、onWindowStageCreate、onNewWant三个函数，可参考[启动应用内的UIAbility组件-UIAbility组件-Stage模型应用组件-Stage模型开发指导-Ability Kit（程序框架服务）-应用框架 - 华为HarmonyOS开发者](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/uiability-intra-device-interaction-V5#%E5%90%AF%E5%8A%A8uiability%E7%9A%84%E6%8C%87%E5%AE%9A%E9%A1%B5%E9%9D%A2)，此外添加页面，需要在对应模块下的src/main/resources/base/profile/main_pages.json中添加对应页面的route。
 
