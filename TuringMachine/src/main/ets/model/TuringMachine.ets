@@ -1,4 +1,4 @@
-import { State,AutomatonType } from 'shared'
+import { State, AutomatonType, Const } from 'shared'
 import {TuringTransition} from './TuringTransition'
 import 'reflect-metadata';
 import { Uuid } from 'shared/src/main/ets/automaton/function/Uuid'
@@ -14,6 +14,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   protected tape: Map<number, string> = new Map();
   // 读写头位置
   headPosition: number = 0;
+  initialTape: string = "";
   // 空白符号
   protected blank: string = 'ε';
   protected currentTape: string = "";
@@ -34,7 +35,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     this.states = new Set<S>();
     this.transitions = new Set<T>();
     this.initialState = null;
-    this.blank = "ε";
+    this.blank = Const.EMPTY_STRING;
     this.tape = new Map<number, string>(); // 纸带Σ* (稀疏存储)
     this.headPosition = 0;
     this.currentState = null;
@@ -75,6 +76,80 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
     this.currentTape = tapeStr;
   }
+
+  //tm七元组基本信息展示
+  //状态集
+  public showStates(): string {
+    let showStr = "";
+    for (const state of this.states) {
+      if (state.name != "") {
+        showStr = showStr + state.name + " ";
+      }
+    }
+    return showStr;
+  }
+
+  //开始状态
+  public showInitialState(): string {
+    if (this.initialState != null) {
+      return this.initialState.name;
+    } else {
+      return "NULL";
+    }
+  }
+
+  //终止状态集
+  public showFinalStates(): string {
+    let showStr = "";
+    for (const state of this.states) {
+      if (state.isFinal) {
+        showStr = showStr + state.name + " ";
+      }
+    }
+    return showStr;
+  }
+
+  //带符号表
+  public showSymbols(): string {
+    const symbols = new Set<string>();
+    for (const transition of this.transitions) {
+      symbols.add(transition.readSymbol);
+      symbols.add(transition.writeSymbol);
+    }
+    symbols.add("ε")
+    const showStr = Array.from(symbols);
+    return showStr.join(' ');
+  }
+
+  //空白符
+  public showBlankSymbol(): string {
+    return Const.EMPTY_STRING;
+  }
+
+  //输入字母表
+  public showEnterSymbols(): string {
+    const charArray: string[] = this.initialTape.split('');
+    const uniqueCharSet: Set<string> = new Set(charArray);
+    const result: string = Array.from(uniqueCharSet).join(' ');
+    return result;
+  }
+
+  //移动函数
+  public showTransitions(): string[] {
+    const strs = new Set<string>();
+    for (const transition of this.transitions) {
+      let str = "";
+      const fromState = this.getStateWithUuid(transition.from);
+      const toState = this.getStateWithUuid(transition.to);
+      if (fromState != null && toState != null) {
+        str =
+          `δ(${fromState.name},${transition.readSymbol})=(${toState.name},${transition.writeSymbol},${transition.moveDirection})`;
+        strs.add(str);
+      }
+    }
+    return Array.from(strs);
+  }
+
 
   public setNote(note: string): void {
     this.note = note;
@@ -221,6 +296,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   /** 初始化纸带内容 */
   public initializeTape(input: string, startPosition: number = 0): void {
     this.tape.clear(); // 清空历史数据
+    this.initialTape = input;
     // 仅写入非空白符号
     input.split('').forEach((char, index) => {
       if (char !== this.blank) {
@@ -312,6 +388,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     this.currentState = this.initialState;
     this.headPosition = 0;
     this.tape.clear();
+    this.initialTape = "";
   }
 
 }

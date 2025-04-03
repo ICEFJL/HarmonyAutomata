@@ -46,3 +46,4 @@ export class State {
     return new State(state.x, state.y, state.name, state.isFinal, state.uuid);
   }
 }
+
