@@ -1,4 +1,4 @@
-import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw,SavedFile,Const} from 'shared'
+import { State,AutomatonType,DrawInvoker,DrawState,DrawTransition,IDraw,SavedFile,Const, DrawType} from 'shared'
 import {TuringTransition} from './TuringTransition'
 import {LogUtil} from '@pura/harmony-utils';
 import {TuringMachine} from './TuringMachine'
@@ -116,6 +116,13 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
       }
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
+    let delArray: Array<IDraw> = [];
+    for(let items of draw.transitionMap.values()){
+      for(let item of items){
+        delArray.push(item)
+      }
+    }
+    draw.update(delArray, DrawType.DELETE);
     draw.update(drawArray);
   }
 
