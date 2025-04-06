@@ -78,14 +78,13 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       }
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
-    let delArray: Array<IDraw> = [];
+    let delArray: Array<DrawTransition> = [];
     for(let items of draw.transitionMap.values()){
       for(let item of items){
         delArray.push(item)
       }
     }
-    draw.update(delArray, DrawType.DELETE);
-    draw.update(drawArray);
+    draw.update(drawArray,DrawType.CREATE, delArray);
   }
 
   public getSuccessors(node: Node<FSAState>): Node<FSAState>[]{

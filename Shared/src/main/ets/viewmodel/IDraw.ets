@@ -1,3 +1,5 @@
+import { DrawTransition } from "./DrawTransition";
+
 export abstract class IDraw {
   constructor() {}
 
@@ -7,10 +9,12 @@ export abstract class IDraw {
 export class DrawOperate{
   op: Array<IDraw> = [];
   type: DrawType = DrawType.UPDATE;
+  preTransition: Array<DrawTransition> = [];
 
-  constructor(op: Array<IDraw> = [], type: DrawType = DrawType.UPDATE) {
+  constructor(op: Array<IDraw> = [], type: DrawType = DrawType.UPDATE, preTransition: Array<DrawTransition> = []) {
     this.op = op;
     this.type = type;
+    this.preTransition = preTransition;
   }
 }
 

@@ -303,7 +303,7 @@ export struct DrawCanvas {
         if (this.isExist(touch.x, touch.y) !== Const.STATE) {
           return;
         }
-        const key = DrawInvoker.createKey(start.state.uuid, this.mState.state.uuid);
+        const key = HelpUtil.createKey(start.state.uuid, this.mState.state.uuid);
         if (!this.drawInvoker.transitionMap.has(key)) {
           this.mTransition = new DrawTransition(start.state, this.mState.state,"");
         }else{

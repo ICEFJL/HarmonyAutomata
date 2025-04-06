@@ -100,6 +100,20 @@ export class HelpUtil {
     return [ clampedX, clampedY ];
   }
 
+  static createKey(fromStateUuid: number, toStateUuid: number): string {
+    return `${fromStateUuid}-${toStateUuid}`;
+  }
+
+  static extractUuids(key: string): [number, number] {
+    const parts = key.split('-');
+    if (parts.length !== 2) {
+      throw new Error('Invalid key format');
+    }
+    const fromStateUuid = parseInt(parts[0], 10);
+    const toStateUuid = parseInt(parts[1], 10);
+    return [fromStateUuid, toStateUuid];
+  }
+
   static savePicture(name: string): void{
     let picture = globalContext.toDataURL();
     SavedFile.saveToFile(picture, "", name + Const.PIC_POSTFIX);

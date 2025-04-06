@@ -33,7 +33,13 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
       }
       drawArray.push(new DrawTransition(fromState, toState, label));
     }
-    draw.update(drawArray);
+    let delArray: Array<DrawTransition> = [];
+    for(let items of draw.transitionMap.values()){
+      for(let item of items){
+        delArray.push(item)
+      }
+    }
+    draw.update(drawArray,DrawType.CREATE, delArray);
   }
 
   public static getTuringMachine(draw: DrawInvoker): BaseTuringMachine{
@@ -93,37 +99,6 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
         this.removeState(state);
       }
     });
-  }
-
-  public drawTuringMachine(draw: DrawInvoker){
-    let drawArray: Array<IDraw> = [];
-    const states = this.getStates();
-    for (const state of states) {
-      if(state === this.initialState){
-        draw.initialState = new DrawState(state, true);
-        drawArray.push(draw.initialState);
-      }else{
-        drawArray.push(new DrawState(state, false));
-      }
-    }
-    const transitions = this.getTransitions();
-    for (const transition of transitions) {
-      const label = transition.label;
-      const fromState = this.getStateWithUuid(transition.from);
-      const toState = this.getStateWithUuid(transition.to);
-      if(!fromState || !toState){
-        continue;
-      }
-      drawArray.push(new DrawTransition(fromState, toState, label));
-    }
-    let delArray: Array<IDraw> = [];
-    for(let items of draw.transitionMap.values()){
-      for(let item of items){
-        delArray.push(item)
-      }
-    }
-    draw.update(delArray, DrawType.DELETE);
-    draw.update(drawArray);
   }
 
   public static getAlphabet(automaton: BaseTuringMachine): string[] {

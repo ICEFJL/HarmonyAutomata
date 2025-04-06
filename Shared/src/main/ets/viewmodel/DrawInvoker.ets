@@ -1,3 +1,4 @@
+import { HelpUtil } from "../common/HelpUtil";
 import { DrawState } from "./DrawState";
 import { DrawTransition } from "./DrawTransition";
 import { DrawOperate, DrawType, IDraw } from "./IDraw";
@@ -18,19 +19,7 @@ export default class DrawInvoker {
 
   isDrawing: boolean = false;
 
-  static createKey(fromStateUuid: number, toStateUuid: number): string {
-    return `${fromStateUuid}-${toStateUuid}`;
-  }
-
-  static extractUuids(key: string): [number, number] {
-    const parts = key.split('-');
-    if (parts.length !== 2) {
-      throw new Error('Invalid key format');
-    }
-    const fromStateUuid = parseInt(parts[0], 10);
-    const toStateUuid = parseInt(parts[1], 10);
-    return [fromStateUuid, toStateUuid];
-  }
+  tempArray: Array<DrawTransition> = [];
 
   clearAll(): void {
     this.drawList = [];            // 清空操作历史列表
@@ -45,21 +34,21 @@ export default class DrawInvoker {
 
   setNeedOffset(command: DrawTransition, flag: boolean, type: DrawType = DrawType.UPDATE): void{
     if (command.toState.uuid !== command.fromState.uuid){
-      const nKey = DrawInvoker.createKey(command.toState.uuid, command.fromState.uuid);
+      const nKey = HelpUtil.createKey(command.toState.uuid, command.fromState.uuid);
       if (this.transitionMap.has(nKey)) {
         let transitionArray = this.transitionMap.get(nKey)!;
         transitionArray.forEach((item)=>{
           item.needOffset = flag;
         })
         //transitionArray[transitionArray.length - 1].needOffset = flag;
-        if(type === DrawType.UPDATE){
+        if(type === DrawType.UPDATE || type === DrawType.CREATE){
           command.needOffset = flag;
         }
       }
     }
   }
 
-  update(commands: Array<IDraw>, type: DrawType = DrawType.UPDATE): void {
+  update(commands: Array<IDraw>, type: DrawType = DrawType.UPDATE, preTransition: Array<DrawTransition> = []): void {
     this.isDrawing = true;
     let draw: DrawOperate = new DrawOperate();
     switch (type){
@@ -77,13 +66,13 @@ export default class DrawInvoker {
               drawArray.push(state);
             })
             this.transitionMap.forEach((transitions: Array<DrawTransition>, keyStr: string) => {
-              const key = DrawInvoker.extractUuids(keyStr);
+              const key = HelpUtil.extractUuids(keyStr);
               if(key[0] === command.state.uuid || key[1] === command.state.uuid){
                 drawArray.push(...transitions);
               }
             });
           } else if(command instanceof DrawTransition){
-            const key = DrawInvoker.createKey(command.fromState.uuid, command.toState.uuid);
+            const key = HelpUtil.createKey(command.fromState.uuid, command.toState.uuid);
             if (this.transitionMap.has(key)) {
               let transitions = this.transitionMap.get(key)!;
               for (let t of transitions){
@@ -109,12 +98,19 @@ export default class DrawInvoker {
           this.push(draw);
         }
         break;
+      case DrawType.CREATE:
+        draw = new DrawOperate(commands, type, preTransition);
+        this.drawList.push(draw);
+        this.push(draw);
+        break;
+      default:
+        break;
     }
   }
 
   changeMove(mState: DrawState): void {
     this.transitionMap.forEach((transitions: Array<DrawTransition>, keyStr: string) => {
-      const key = DrawInvoker.extractUuids(keyStr);
+      const key = HelpUtil.extractUuids(keyStr);
       if(key[0] === mState.state.uuid || key[1] === mState.state.uuid){
         transitions.forEach((transition:DrawTransition) => {
           if(key[0] === mState.state.uuid){
@@ -128,76 +124,100 @@ export default class DrawInvoker {
     });
   }
 
+  pushState(command: DrawState){
+    const uuid = command.state.uuid;
+    if (!this.stateMap.has(uuid)) {
+      this.stateMap.set(uuid, []);
+      this.flag = true;
+    }else if(!this.flag){
+      const stateArray = this.stateMap.get(uuid);
+      if(stateArray && !stateArray[stateArray.length - 1].equals(command)){
+        this.flag = true;
+      }
+    }
+    this.stateMap.get(uuid)!.push(command);
+  }
+
+  pushTransition(command: DrawTransition){
+    const key = HelpUtil.createKey(command.fromState.uuid, command.toState.uuid);
+    if (!this.transitionMap.has(key)) {
+      this.transitionMap.set(key, []);
+      this.flag = true;
+    }else if(!this.flag){
+      const transitionArray = this.transitionMap.get(key)!;
+      if(transitionArray &&  !transitionArray.some(transition => transition.label === command.label)){
+        this.flag = true;
+      }
+    }
+    this.transitionMap.get(key)!.push(command);
+    //console.log('查看有多少个转移', JSON.stringify(this.transitionMap.get(key)));
+    this.tempArray.push(command);
+  }
+
   push(draw: DrawOperate): void {
-    let tempArray: Array<DrawTransition> = [];
+    if (draw.type === DrawType.CREATE) {
+      let temp = new DrawOperate(draw.preTransition, DrawType.DELETE);
+      this.pop(temp);
+    }
+    this.tempArray = [];
     this.flag = false;
     draw.op.forEach(command => {
       if (command instanceof DrawState) {
-        const uuid = command.state.uuid;
-        if (!this.stateMap.has(uuid)) {
-          this.stateMap.set(uuid, []);
-          this.flag = true;
-        }else if(!this.flag){
-          const stateArray = this.stateMap.get(uuid);
-          if(stateArray && !stateArray[stateArray.length - 1].equals(command)){
-            this.flag = true;
-          }
-        }
-        this.stateMap.get(uuid)!.push(command);
+        this.pushState(command);
       } else if (command instanceof DrawTransition) {
-        const key = DrawInvoker.createKey(command.fromState.uuid, command.toState.uuid);
-        if (!this.transitionMap.has(key)) {
-          this.transitionMap.set(key, []);
-          this.flag = true;
-        }else if(!this.flag){
-          const transitionArray = this.transitionMap.get(key)!;
-          if(transitionArray &&  !transitionArray.some(transition => transition.label === command.label)){
-            this.flag = true;
-          }
-        }
-        this.transitionMap.get(key)!.push(command);
-        //console.log('查看有多少个转移', JSON.stringify(this.transitionMap.get(key)));
-        tempArray.push(command);
+        this.pushTransition(command);
       }
     });
-    tempArray.forEach(command => {
+    this.tempArray.forEach(command => {
       this.setNeedOffset(command, true, draw.type);
     });
   }
 
+  popState(command: DrawState){
+    const uuid = command.state.uuid;
+    const stateArray = this.stateMap.get(uuid)!;
+    stateArray.pop();
+    if (stateArray.length === 0) {
+      this.stateMap.delete(uuid);
+    }
+  }
+
+  popTransition(command: DrawTransition): void {
+    const key = HelpUtil.createKey(command.fromState.uuid, command.toState.uuid);
+    const transitionArray = this.transitionMap.get(key)!;
+    // 查找符合条件的转换
+    const transitionToRemove = transitionArray.find(t => t.label === command.label);
+    // 如果找到了转换，则执行删除操作
+    if (transitionToRemove) {
+      // 从数组中删除这个转换
+      const index = transitionArray.indexOf(transitionToRemove);
+      if (index !== -1) {
+        transitionArray.splice(index, 1); // 删除该转换
+      }
+    }
+    //transitionArray.pop();
+    if (transitionArray.length === 0) {
+      this.transitionMap.delete(key);
+      this.tempArray.push(command);
+    }
+  }
+
   pop(draw: DrawOperate): void {
-    let tempArray: Array<DrawTransition> = [];
+    this.tempArray = [];
     draw.op.forEach(command => {
       if (command instanceof DrawState) {
-        const uuid = command.state.uuid;
-        const stateArray = this.stateMap.get(uuid)!;
-        stateArray.pop();
-        if (stateArray.length === 0) {
-          this.stateMap.delete(uuid);
-        }
+        this.popState(command);
       } else if (command instanceof DrawTransition) {
-        const key = DrawInvoker.createKey(command.fromState.uuid, command.toState.uuid);
-        const transitionArray = this.transitionMap.get(key)!;
-        // 查找符合条件的转换
-        const transitionToRemove = transitionArray.find(t => t.label === command.label);
-        // 如果找到了转换，则执行删除操作
-        if (transitionToRemove) {
-          // 从数组中删除这个转换
-          const index = transitionArray.indexOf(transitionToRemove);
-          if (index !== -1) {
-            transitionArray.splice(index, 1); // 删除该转换
-          }
-        }
-        //transitionArray.pop();
-        if (transitionArray.length === 0) {
-          this.transitionMap.delete(key);
-          tempArray.push(command);
-        }
+        this.popTransition(command);
       }
     });
-    tempArray.forEach(command => {
+    this.tempArray.forEach(command => {
       this.setNeedOffset(command, false, draw.type);
     });
+    if(draw.type === DrawType.CREATE){
+      let temp = new DrawOperate(draw.preTransition, DrawType.UPDATE);
+      this.push(temp);
+    }
   }
 
   undo(): void {
@@ -219,6 +239,9 @@ export default class DrawInvoker {
           const state = stateArray[stateArray.length - 1];
           this.changeMove(state);
           break;
+        case DrawType.CREATE:
+          this.pop(undoCommands);
+          break;
       }
     }
   }
@@ -237,6 +260,9 @@ export default class DrawInvoker {
         case DrawType.MOVE:
           this.push(redoCommands);
           this.changeMove(redoCommands.op[0] as DrawState);
+          break;
+        case DrawType.CREATE:
+          this.push(redoCommands);
           break;
       }
     }
