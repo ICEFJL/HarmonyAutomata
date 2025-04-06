@@ -7,12 +7,12 @@ export struct Save{
 
   getAbility(type: AutomatonType): string {
     switch (type) {
-      case AutomatonType.FSA:
-      case AutomatonType.NFA:
       case AutomatonType.PDA:
         return FunctionUrl.PA
       case AutomatonType.TM:
         return FunctionUrl.TM
+      case AutomatonType.FSA:
+      case AutomatonType.NFA:
       case AutomatonType.DFA:
         return FunctionUrl.FA
       default:
@@ -48,55 +48,68 @@ export struct Save{
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP])
   }
 
+  @Builder
+  delete(index: number) {
+    Text('删除')
+      .fontSize(20) // 设置字体大小
+      .fontColor(Color.White) // 设置字体颜色为白色
+      .textAlign(TextAlign.Center) // 设置文本居中对齐
+      .backgroundColor(Color.Red) // 设置背景颜色为红色
+      .height(70)
+      .width(70)
+      .onClick(() => {
+        const name = this.savedFileList[index].fileName;
+        this.savedFileList.splice(index, 1);
+        SavedFile.delete(name);
+      })
+  }
+
+
   build() {
     NavDestination() {
-      Column({ space: 10 }) {
-        ForEach(this.savedFileList, (item: SavedFile)=>{
-          Row(){
-            Image(HelpUtil.getPicture(item.fileName))
-              .width(60)
-              .height(60)
-              .margin(5)
-            Column({ space: 5}) {
-              Row() {
-                Text(item.fileName)
-                  .textAlign(TextAlign.Start)
-                  .fontSize(20)
-                  .layoutWeight(1)
-                Text(item.fileType)
-                  .textAlign(TextAlign.End)
-                  .fontSize(20)
+      List({ space: 10 }) {
+        ForEach(this.savedFileList, (item: SavedFile, index: number)=>{
+          ListItem(){
+            Row(){
+              Image(HelpUtil.getPicture(item.fileName))
+                .width(60)
+                .height(60)
+                .margin(5)
+              Column({ space: 5}) {
+                Row() {
+                  Text(item.fileName)
+                    .textAlign(TextAlign.Start)
+                    .fontSize(20)
+                    .layoutWeight(1)
+                  Text(item.fileType)
+                    .textAlign(TextAlign.End)
+                    .fontSize(20)
 
+                }
+                Row() {
+                  Text(item.note)
+                    .textAlign(TextAlign.Start)
+                    .fontSize(20)
+                    .layoutWeight(1)
+                  Text(item.getSaveTimeStr())
+                    .textAlign(TextAlign.End)
+                    .fontSize(20)
+                }
               }
-              Row() {
-                Text(item.note)
-                  .textAlign(TextAlign.Start)
-                  .fontSize(20)
-                  .layoutWeight(1)
-                Text(item.getSaveTimeStr())
-                  .textAlign(TextAlign.End)
-                  .fontSize(20)
-              }
-            }
               .layoutWeight(1)
               .margin(5)
+            }
+            .height(70)
+            .backgroundColor(Color.White)
+            .onClick(() => {
+              this.startAbility(this.getAbility(item.fileType),this.getRouter(item.fileType), item)
+            })
           }
-          .height(70)
-          .backgroundColor(Color.White)
-          .onClick(() => {
-            this.startAbility(this.getAbility(item.fileType),this.getRouter(item.fileType), item)
-          })
+          .swipeAction({end: this.delete(index)})
         })
-        Button('test')
-          .onClick(() => {
-            this.startAbility(FunctionUrl.FA, 'test')
-          })
-        Button('test1')
-          .onClick(() => {
-            this.startAbility(FunctionUrl.FA, 'test1')
-          })
       }
       .padding(20)
+      .layoutWeight(1)
     }
     .title(this.NavigationTitleBar())
     .hideToolBar(true)

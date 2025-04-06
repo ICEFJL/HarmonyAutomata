@@ -123,6 +123,7 @@ struct Index {
       .height('100%')
       .barHeight(60)
       .barMode(BarMode.Fixed)         // TabBar均分
+      .scrollable(false)
     }
     .width('100%')
     .height('100%')

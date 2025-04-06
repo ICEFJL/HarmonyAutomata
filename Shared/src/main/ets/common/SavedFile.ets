@@ -57,10 +57,14 @@ export class SavedFile {
   }
 
   delete(): boolean {
-    Database.deleteByFileName(this.fileName);
-    SavedFile.deleteFile("",this.fileName + Const.FILE_POSTFIX);
-    HelpUtil.deletePicture(this.fileName);
+    SavedFile.delete(this.fileName);
     return true;
+  }
+
+  static delete(fileName: string = ""){
+    Database.deleteByFileName(fileName);
+    SavedFile.deleteFile("",fileName + Const.FILE_POSTFIX);
+    HelpUtil.deletePicture(fileName);
   }
 
   static deleteFile(dirPath: string = "", fileName: string = ""): void{

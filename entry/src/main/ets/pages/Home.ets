@@ -39,16 +39,6 @@ export struct Home {
             this.startAbility(Const.FUNCTION_URL_MAP.get(item), 'Index')
           })
         })
-
-        Button('test')
-          .onClick(() => {
-            this.startAbility(FunctionUrl.FA, 'test')
-          })
-
-        Button('test1')
-          .onClick(() => {
-            this.startAbility(FunctionUrl.FA, 'test1')
-          })
       }
       .padding(20)
     }
