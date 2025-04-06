@@ -1,15 +1,15 @@
 import { Const } from '../common/Constants';
 import DrawInvoker from '../viewmodel/DrawInvoker';
 import { DrawTransition } from '../viewmodel/DrawTransition';
-import { IDraw } from '../viewmodel/IDraw';
+import { DrawType, IDraw } from '../viewmodel/IDraw';
 
 @CustomDialog
 @Component
 export struct TuringTransitionDetailWindow {
   @Consume mTransition: DrawTransition;
   @Consume firstCreate: boolean;
-  @Consume alterflag: boolean;
   @Consume drawInvoker: DrawInvoker;
+  @Consume premTransition: DrawTransition;
 
   //为统一接口:此处保留labelName,拆分labelName为readSymbol:writeSymbol;moveDirection
   //eg.读0写1,方向R;记为0,1;R
@@ -125,8 +125,8 @@ export struct TuringTransitionDetailWindow {
             .fontSize(18)
             .fontColor("#317ef5")
             .onClick(() => {
+              this.endUpdate();
               this.controller.close(); // 关闭弹窗
-              this.alterflag = false;
             })
           Text()
             .size({width: "2px", height: "100%"})
@@ -138,10 +138,6 @@ export struct TuringTransitionDetailWindow {
             .height("100%")
             .layoutWeight(1)
             .onClick(() => {
-              if (!this.firstCreate && !this.alterflag) {
-                this.mTransition = DrawTransition.deepCopy(this.mTransition);
-              }
-              this.alterflag = false;
               //合并为labelName
               if (this.readSymbol == "") {
                 this.readSymbol = "ε";
@@ -159,9 +155,14 @@ export struct TuringTransitionDetailWindow {
                 console.error("未选择移动方向！");
               }
               console.log("TuringTransitionDetailWindow 已设置 labelName ：", this.labelName);
-              this.mTransition.label = this.labelName;
-              //this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
-              this.drawInvoker.update([this.mTransition]);
+              if (this.firstCreate){
+                this.mTransition.label = this.labelName;
+                this.drawInvoker.update([this.mTransition],DrawType.ADD);
+              } else if(this.mTransition.label != this.labelName) {
+                this.mTransition = DrawTransition.deepCopy(this.mTransition);
+                this.mTransition.label = this.labelName;
+                this.drawInvoker.update([this.mTransition],DrawType.UPDATE,[this.premTransition]);
+              }
               this.endUpdate();
               this.controller.close(); // 关闭弹窗
             })

@@ -34,8 +34,8 @@ export struct DrawCanvas {
   @Consume @Watch('endUpdate') update: boolean;
   @Provide mState: DrawState = new DrawState(new AutomatonState(), false);
   @Provide mTransition: DrawTransition = new DrawTransition(new AutomatonState(), new AutomatonState(), "");
+  @Provide premTransition: DrawTransition = new DrawTransition(new AutomatonState(), new AutomatonState(), "");
   @Provide firstCreate: boolean = false;
-  @Provide alterflag: boolean = false;
   premState: DrawState = new DrawState(new AutomatonState(), false);
 
   private context: CanvasRenderingContext2D = globalContext;
@@ -105,11 +105,12 @@ export struct DrawCanvas {
   // 回调函数，用于更新状态
   endUpdate(): void {
     this.isSelected = false;
+    this.firstCreate = false;
     if(!this.drawInvoker.isDrawing){
       this.updateDraw();
       return;
     }
-
+    this.drawInvoker.isDrawing = false;
     if(!this.drawInvoker.flag){
       let commands = this.drawInvoker.drawList.pop()!;
       this.drawInvoker.pop(commands);
@@ -117,7 +118,6 @@ export struct DrawCanvas {
       return;
     }
     this.drawInvoker.flag = false;
-    this.firstCreate = false;
     this.drawInvoker.redoList = [];
     this.redoDraw = false;
     this.unDoDraw = true;
@@ -160,23 +160,20 @@ export struct DrawCanvas {
       for (const eArray of this.drawInvoker.transitionMap.values()) {
         for(let i = 0; i < eArray.length;i++){
           const e = eArray[i];
-          // 判断标签区域：可以根据标签的坐标和大小判断
-          const labelX = (e.baseLine[0][0] + e.baseLine[1][0]) / 2;
-          const labelY = (e.baseLine[0][1] + e.baseLine[1][1]) / 2 - 8 * i;
 
-          const dx = x - labelX;
-          const dy = y - labelY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = Math.abs(x - e.x);
+          const dy = Math.abs(y - e.y);
 
-          // 假设标签区域的点击范围是一个固定的半径（例如 20）
-          if (distance <= 4) {
+          if (dx <= e.labelWidth && dy <= this.drawInvoker.labelHeight) {
             this.mTransition = e;
+            this.premTransition = e;
             return Const.TRANSITION;
           }
         }
-        const e = eArray[eArray.length - 1];
+        const e = eArray[0];
         if(HelpUtil.isInRectPath([x,y],e.p1 , e.p2, e.p3, e.p4)){
           this.mTransition = e;
+          this.premTransition = e;
           return Const.TRANSITION;
         }
       }
@@ -235,7 +232,7 @@ export struct DrawCanvas {
           return;
         }
         //替换
-        this.alterflag = true;
+        this.firstCreate = false;
         this.selectTransitionWindow();
         break;
     }
@@ -303,13 +300,8 @@ export struct DrawCanvas {
         if (this.isExist(touch.x, touch.y) !== Const.STATE) {
           return;
         }
-        const key = HelpUtil.createKey(start.state.uuid, this.mState.state.uuid);
-        if (!this.drawInvoker.transitionMap.has(key)) {
-          this.mTransition = new DrawTransition(start.state, this.mState.state,"");
-        }else{
-          const transitionArray = this.drawInvoker.transitionMap.get(key)!;
-          this.mTransition = transitionArray[transitionArray.length - 1];
-        }
+        this.mTransition = new DrawTransition(start.state, this.mState.state,"");
+        this.firstCreate = true;
         //替换
         this.selectTransitionWindow();
         break;
@@ -330,6 +322,10 @@ export struct DrawCanvas {
         .height(Const.ONE_HUNDRED_PERCENT)
         .backgroundColor($r('sys.color.white'))
         .onReady(() => {
+          this.context.save();
+          HelpUtil.drawLabelContext(this.context);
+          this.drawInvoker.labelHeight = this.context.measureText(Const.EMPTY_STRING).height / 2;
+          this.context.restore();
           this.endUpdate();
         })
         .onTouch((event: TouchEvent) => {

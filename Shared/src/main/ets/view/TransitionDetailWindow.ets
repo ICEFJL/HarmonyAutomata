@@ -1,15 +1,15 @@
 import { Const } from '../common/Constants';
 import DrawInvoker from '../viewmodel/DrawInvoker';
 import { DrawTransition } from '../viewmodel/DrawTransition';
-import { IDraw } from '../viewmodel/IDraw';
+import { DrawType, IDraw } from '../viewmodel/IDraw';
 
 @CustomDialog
 @Component
 export struct TransitionDetailWindow {
   @Consume mTransition: DrawTransition;
   @Consume firstCreate: boolean;
-  @Consume alterflag: boolean;
   @Consume drawInvoker: DrawInvoker;
+  @Consume premTransition: DrawTransition;
   labelName: string = "";
   endUpdate: Function = () => {};
 
@@ -51,8 +51,8 @@ export struct TransitionDetailWindow {
             .fontSize(18)
             .fontColor("#317ef5")
             .onClick(() => {
+              this.endUpdate();
               this.controller.close(); // 关闭弹窗
-              this.alterflag = false;
             })
           Text()
             .size({width: "2px", height: "100%"})
@@ -64,13 +64,15 @@ export struct TransitionDetailWindow {
             .height("100%")
             .layoutWeight(1)
             .onClick(() => {
-              if(!this.firstCreate && !this.alterflag){
+              this.labelName = Array.from(new Set(this.labelName)).join('');
+              if (this.firstCreate){
+                this.mTransition.label = this.labelName;
+                this.drawInvoker.update([this.mTransition],DrawType.ADD);
+              } else if(this.mTransition.label != this.labelName) {
                 this.mTransition = DrawTransition.deepCopy(this.mTransition);
+                this.mTransition.label = this.labelName;
+                this.drawInvoker.update([this.mTransition],DrawType.UPDATE,[this.premTransition]);
               }
-              this.alterflag = false;
-              this.mTransition.label = this.labelName;
-              this.mTransition.label = Array.from(new Set(this.mTransition.label)).join('')
-              this.drawInvoker.update([this.mTransition]);
               this.endUpdate();
               this.controller.close(); // 关闭弹窗
             })

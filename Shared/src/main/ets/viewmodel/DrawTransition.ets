@@ -1,13 +1,18 @@
+import { Uuid } from '../automaton/function/Uuid';
 import { State } from '../automaton/State';
 import { Const } from '../common/Constants';
 import { HelpUtil } from '../common/HelpUtil';
 import { IDraw } from './IDraw';
 
 export class DrawTransition extends IDraw {
+  uuid: number;
   fromState: State;
   toState: State;
   label: string;
   needOffset: boolean;
+  x: number = 0;
+  y: number = 0;
+  labelWidth: number = 0;
   p1: [number, number] = [0, 0];
   p2: [number, number] = [0, 0];
   p3: [number, number] = [0, 0];
@@ -16,8 +21,9 @@ export class DrawTransition extends IDraw {
   public  baseLine: [number, number][] = [[0, 0], [0, 0]];
   private arrowEnd: [number, number][] = [[0, 0], [0, 0], [0, 0]];
 
-  constructor(fromState: State, toState: State, label: string, needOffset: boolean = false) {
+  constructor(fromState: State, toState: State, label: string, needOffset: boolean = false, uuid: number = Uuid.index) {
     super();
+    this.uuid = uuid;
     this.fromState = fromState;
     this.toState = toState;
     this.label = label;
@@ -34,13 +40,10 @@ export class DrawTransition extends IDraw {
     }
 
     // Draw the labels
-    context.font = Const.LABEL_FONT;
-    context.fillStyle = 'Black';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
+    HelpUtil.drawLabelContext(context);
 
-    let x: number = (this.baseLine[0][0] + this.baseLine[1][0]) / 2;
-    let y: number = (this.baseLine[0][1] + this.baseLine[1][1]) / 2;
+    this.x = (this.baseLine[0][0] + this.baseLine[1][0]) / 2;
+    this.y = (this.baseLine[0][1] + this.baseLine[1][1]) / 2;
     if(this.fromState !== this.toState){
       const dx = this.baseLine[1][0] - this.baseLine[0][0];
       const dy = this.baseLine[1][1] - this.baseLine[0][1];
@@ -53,19 +56,21 @@ export class DrawTransition extends IDraw {
       const px = ny;
       const py = -nx;
 
-      x += px * Const.LINE_BAND_WIDTH / 2;
-      y += py * Const.LINE_BAND_WIDTH / 2;
+      this.x += px * Const.LINE_BAND_WIDTH / 2;
+      this.y += py * Const.LINE_BAND_WIDTH / 2;
       if(py < 0) {
         labelOffset = -labelOffset;
       }
+      this.y += labelOffset;
     }
     //此处label最小长度改为5
+    let str = this.label.length === 0 ? Const.EMPTY_STRING : this.label;
     if(this.label.length > 5){
-      context.fillText(this.label.length.toString(), x, y);
-    } else {
-      context.fillText(this.label.length === 0 ? Const.EMPTY_STRING : this.label, x, y + labelOffset);
-      //console.log("检查偏移", x+labelOffset)
+      str = this.label.length.toString()
     }
+    context.fillText(str, this.x, this.y);
+    let res = context.measureText(str);
+    this.labelWidth = res.width / 2;
 
     context.beginPath();
     context.moveTo(this.arrowEnd[0][0], this.arrowEnd[0][1]);
@@ -235,6 +240,6 @@ export class DrawTransition extends IDraw {
 
 
   public static deepCopy(drawTransition: DrawTransition){
-    return new DrawTransition(drawTransition.fromState, drawTransition.toState, drawTransition.label, drawTransition.needOffset);
+    return new DrawTransition(drawTransition.fromState, drawTransition.toState, drawTransition.label, drawTransition.needOffset, drawTransition.uuid);
   }
 }

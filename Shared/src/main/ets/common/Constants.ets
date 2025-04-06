@@ -23,7 +23,8 @@ export class Const {
   static readonly CANVAS_WIDTH: number = 750;
   static readonly ONE_HUNDRED_PERCENT: string = '100%';
   static readonly SCALE: number = 2;
-  static readonly LABEL_FONT: string = 16 / this.SCALE + 'vp';
+  static readonly LABEL_FONT_NUMBER = 16 / this.SCALE;
+  static readonly LABEL_FONT: string = this.LABEL_FONT_NUMBER + 'vp';
   static readonly LINE_WIDTH: number = 2 / this.SCALE;
   static readonly CIRCLE_RADIUS: number = vp2px(10) / this.SCALE;
   static readonly OVAL_A: number = this.CIRCLE_RADIUS;

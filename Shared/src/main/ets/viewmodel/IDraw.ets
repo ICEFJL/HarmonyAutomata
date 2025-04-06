@@ -22,5 +22,6 @@ export enum DrawType {
   UPDATE,
   DELETE,
   MOVE,
-  CREATE
+  CREATE,
+  ADD
 }

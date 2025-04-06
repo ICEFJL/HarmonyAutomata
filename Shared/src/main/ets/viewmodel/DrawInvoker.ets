@@ -21,6 +21,8 @@ export default class DrawInvoker {
 
   tempArray: Array<DrawTransition> = [];
 
+  labelHeight: number = 0;
+
   clearAll(): void {
     this.drawList = [];            // 清空操作历史列表
     this.redoList = [];            // 清空重做列表
@@ -40,8 +42,7 @@ export default class DrawInvoker {
         transitionArray.forEach((item)=>{
           item.needOffset = flag;
         })
-        //transitionArray[transitionArray.length - 1].needOffset = flag;
-        if(type === DrawType.UPDATE || type === DrawType.CREATE){
+        if(type === DrawType.ADD || type === DrawType.CREATE){
           command.needOffset = flag;
         }
       }
@@ -52,8 +53,9 @@ export default class DrawInvoker {
     this.isDrawing = true;
     let draw: DrawOperate = new DrawOperate();
     switch (type){
+      case DrawType.ADD:
       case DrawType.UPDATE:
-        draw = new DrawOperate(commands, type);
+        draw = new DrawOperate(commands, type, preTransition);
         this.drawList.push(draw);
         this.push(draw);
         break;
@@ -150,7 +152,6 @@ export default class DrawInvoker {
       }
     }
     this.transitionMap.get(key)!.push(command);
-    //console.log('查看有多少个转移', JSON.stringify(this.transitionMap.get(key)));
     this.tempArray.push(command);
   }
 
@@ -158,6 +159,11 @@ export default class DrawInvoker {
     if (draw.type === DrawType.CREATE) {
       let temp = new DrawOperate(draw.preTransition, DrawType.DELETE);
       this.pop(temp);
+    }
+    if(draw.type === DrawType.UPDATE){
+      for(const transition of draw.preTransition){
+        this.popTransition(transition)
+      }
     }
     this.tempArray = [];
     this.flag = false;
@@ -168,9 +174,11 @@ export default class DrawInvoker {
         this.pushTransition(command);
       }
     });
-    this.tempArray.forEach(command => {
-      this.setNeedOffset(command, true, draw.type);
-    });
+    if(draw.type !== DrawType.UPDATE){
+      this.tempArray.forEach(command => {
+        this.setNeedOffset(command, true, draw.type);
+      });
+    }
   }
 
   popState(command: DrawState){
@@ -186,7 +194,7 @@ export default class DrawInvoker {
     const key = HelpUtil.createKey(command.fromState.uuid, command.toState.uuid);
     const transitionArray = this.transitionMap.get(key)!;
     // 查找符合条件的转换
-    const transitionToRemove = transitionArray.find(t => t.label === command.label);
+    const transitionToRemove = transitionArray.find(t => t.uuid === command.uuid);
     // 如果找到了转换，则执行删除操作
     if (transitionToRemove) {
       // 从数组中删除这个转换
@@ -211,9 +219,15 @@ export default class DrawInvoker {
         this.popTransition(command);
       }
     });
-    this.tempArray.forEach(command => {
-      this.setNeedOffset(command, false, draw.type);
-    });
+    if(draw.type === DrawType.UPDATE){
+      for(const transition of draw.preTransition){
+        this.pushTransition(transition)
+      }
+    } else {
+      this.tempArray.forEach(command => {
+        this.setNeedOffset(command, false, draw.type);
+      });
+    }
     if(draw.type === DrawType.CREATE){
       let temp = new DrawOperate(draw.preTransition, DrawType.UPDATE);
       this.push(temp);
@@ -225,6 +239,7 @@ export default class DrawInvoker {
       let undoCommands = this.drawList.pop()!;
       this.redoList.push(undoCommands);
       switch (undoCommands.type){
+        case DrawType.ADD:
         case DrawType.UPDATE:
           this.pop(undoCommands);
           break;
@@ -251,6 +266,7 @@ export default class DrawInvoker {
       let redoCommands = this.redoList.pop()!;
       this.drawList.push(redoCommands);
       switch (redoCommands.type){
+        case DrawType.ADD:
         case DrawType.UPDATE:
           this.push(redoCommands);
           break;
@@ -275,7 +291,7 @@ export default class DrawInvoker {
       });
       this.transitionMap.forEach((transitions) => {
         transitions.forEach((transition, index) => {
-          transition.draw(context, 8 * index);  // 绘制每条转移
+          transition.draw(context, this.labelHeight * 2 * index);  // 绘制每条转移
           //console.log("调用了drawOffset", 50*index)
         });
       });

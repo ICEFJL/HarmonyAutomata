@@ -1,6 +1,7 @@
 import { SavedFile } from "../../../../Index";
 import { globalContext } from "../components/DrawCanvas";
 import { Const } from "./Constants";
+import { MeasureText } from "@kit.ArkUI";
 
 export class HelpUtil {
   static calculateTransitionEndPointsBetweenTwoStates(x1: number, y1: number, x2: number, y2: number, r: number): [number, number][] {
@@ -98,6 +99,13 @@ export class HelpUtil {
     const clampedX = Math.max(radius, Math.min(x, maxX));
     const clampedY = Math.max(radius, Math.min(y, maxY));
     return [ clampedX, clampedY ];
+  }
+
+  static drawLabelContext(context: CanvasRenderingContext2D){
+    context.font = Const.LABEL_FONT;
+    context.fillStyle = 'Black';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
   }
 
   static createKey(fromStateUuid: number, toStateUuid: number): string {
