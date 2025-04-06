@@ -101,8 +101,31 @@ export default class DrawInvoker {
         this.pop(draw);
         this.flag = true;
         break;
+      case DrawType.MOVE:
+        if(commands[0] instanceof DrawState){
+          this.changeMove(commands[0]);
+          draw = new DrawOperate(commands, type);
+          this.drawList.push(draw);
+          this.push(draw);
+        }
+        break;
     }
+  }
 
+  changeMove(mState: DrawState): void {
+    this.transitionMap.forEach((transitions: Array<DrawTransition>, keyStr: string) => {
+      const key = DrawInvoker.extractUuids(keyStr);
+      if(key[0] === mState.state.uuid || key[1] === mState.state.uuid){
+        transitions.forEach((transition:DrawTransition) => {
+          if(key[0] === mState.state.uuid){
+            transition.fromState = mState.state;
+          }
+          if(key[1] === mState.state.uuid){
+            transition.toState = mState.state;
+          }
+        })
+      }
+    });
   }
 
   push(draw: DrawOperate): void {
@@ -181,10 +204,21 @@ export default class DrawInvoker {
     if (this.drawList.length > 0) {
       let undoCommands = this.drawList.pop()!;
       this.redoList.push(undoCommands);
-      if (undoCommands.type === DrawType.UPDATE){
-        this.pop(undoCommands);
-      } else if (undoCommands.type === DrawType.DELETE){
-        this.push(undoCommands);
+      switch (undoCommands.type){
+        case DrawType.UPDATE:
+          this.pop(undoCommands);
+          break;
+        case DrawType.DELETE:
+          this.push(undoCommands);
+          break;
+        case DrawType.MOVE:
+          const command = undoCommands.op[0] as DrawState;
+          const uuid = command.state.uuid;
+          const stateArray = this.stateMap.get(uuid)!;
+          stateArray.pop();
+          const state = stateArray[stateArray.length - 1];
+          this.changeMove(state);
+          break;
       }
     }
   }
@@ -193,10 +227,17 @@ export default class DrawInvoker {
     if (this.redoList.length > 0) {
       let redoCommands = this.redoList.pop()!;
       this.drawList.push(redoCommands);
-      if (redoCommands.type === DrawType.UPDATE){
-        this.push(redoCommands);
-      } else if (redoCommands.type === DrawType.DELETE){
-        this.pop(redoCommands);
+      switch (redoCommands.type){
+        case DrawType.UPDATE:
+          this.push(redoCommands);
+          break;
+        case DrawType.DELETE:
+          this.pop(redoCommands);
+          break;
+        case DrawType.MOVE:
+          this.push(redoCommands);
+          this.changeMove(redoCommands.op[0] as DrawState);
+          break;
       }
     }
   }
@@ -207,17 +248,10 @@ export default class DrawInvoker {
         states[states.length - 1].draw(context);
       });
       this.transitionMap.forEach((transitions) => {
-        if(transitions.length > 1){
-          transitions.forEach((transition, index) => {
-            transition.drawOffset(context, 8 * index);  // 绘制每条转移
-            //console.log("调用了drawOffset", 50*index)
-          });
-        }
-        else{
-          transitions.forEach((transition) => {
-            transition.draw(context);  // 绘制每条转移
-          });
-        }
+        transitions.forEach((transition, index) => {
+          transition.draw(context, 8 * index);  // 绘制每条转移
+          //console.log("调用了drawOffset", 50*index)
+        });
       });
     }
   }

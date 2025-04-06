@@ -249,27 +249,7 @@ export struct DrawCanvas {
     this.mState = DrawState.deepCopy(this.mState);
     this.mState.radius = Const.CIRCLE_RADIUS + 5 / Const.SCALE;
     let drawArray: Array<IDraw> = [this.mState];
-    let delArray: Array<IDraw> = [];
-    this.drawInvoker.transitionMap.forEach((transitions: Array<DrawTransition>, keyStr: string) => {
-      const key = DrawInvoker.extractUuids(keyStr);
-      if(key[0] === this.mState.state.uuid || key[1] === this.mState.state.uuid){
-        transitions.forEach((transition:DrawTransition) => {
-          this.mTransition = DrawTransition.deepCopy(transition);
-          if(key[0] === this.mState.state.uuid){
-            this.mTransition.fromState = this.mState.state;
-          }
-          if(key[1] === this.mState.state.uuid){
-            this.mTransition.toState = this.mState.state;
-          }
-          drawArray.push(this.mTransition);
-          delArray.push(transition);
-        })
-      }
-    });
-    this.drawInvoker.update(delArray, DrawType.DELETE);
-    console.log("进行了删除")
-    this.drawInvoker.update(drawArray);
-    console.log("进行了添加")
+    this.drawInvoker.update(drawArray, DrawType.MOVE)
     this.updateDraw();
   }
 

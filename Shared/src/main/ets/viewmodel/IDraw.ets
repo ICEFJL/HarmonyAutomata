@@ -17,4 +17,6 @@ export class DrawOperate{
 export enum DrawType {
   UPDATE,
   DELETE,
+  MOVE,
+  CREATE
 }
