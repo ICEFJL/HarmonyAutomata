@@ -11,7 +11,6 @@ export class FSA {
     return DFA.minimize(minFsa);
   }
 
-  // 在 FSAAutomaton 类中添加 isEquivalentTo 方法
   public static isEqual(fsa1: FSAAutomaton, fsa2: FSAAutomaton): boolean {
     const min1 = FSA.minimize(fsa1);
     const min2 = FSA.minimize(fsa2);
