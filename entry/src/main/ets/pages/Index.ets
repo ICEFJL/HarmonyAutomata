@@ -23,6 +23,9 @@ struct Index {
         return;
       }
       this.savedFileList = data; // 更新状态
+      this.savedFileList.sort((a, b) => {
+        return b.saveTime - a.saveTime;
+      })
     } catch (error) {
       LogUtil.error('Failed to load saved files: ' + JSON.stringify(error));
     }

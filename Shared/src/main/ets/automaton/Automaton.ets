@@ -124,7 +124,7 @@ export abstract class Automaton<S extends State, T extends Transition> {
     this.initialState = initialState;
   }
 
-  private isInitialState(state: S): boolean {
+  public isInitialState(state: S): boolean {
     return this.initialState !== null && this.initialState.equals(state);
   }
 

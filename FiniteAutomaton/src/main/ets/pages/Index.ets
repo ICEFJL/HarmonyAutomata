@@ -16,6 +16,8 @@ import { common, Want } from '@kit.AbilityKit';
 import { router, window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { funcAbilityWant } from '../finiteautomatonability/FiniteAutomatonAbility';
+import { AutomatonCreator } from '../test/AutomatonCreator';
+import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../test/TestAutomaton';
 
 @Entry
 @Component
@@ -83,6 +85,7 @@ struct FSAComponent {
 
   clearAll(): void{
     this.drawInvoker.clearAll();
+    this.endUpdate();
     this.unDoDraw = false;
     this.redoDraw = false;
   }
@@ -107,7 +110,6 @@ struct FSAComponent {
     }
 
     this.clearAll();
-    this.endUpdate();
   }
 
   delete(): void{
@@ -116,7 +118,6 @@ struct FSAComponent {
       this.saveFile = null;
       this.fsa = new FSAAutomaton();
       this.clearAll();
-      this.endUpdate();
       ToastUtil.showToast('删除成功');
     }else{
       ToastUtil.showToast('尚未保存');
@@ -167,7 +168,7 @@ struct FSAComponent {
           }
           this.fsa = NFA.toDFA(FSAAutomaton.getAutomaton(this.drawInvoker));
           this.fsa = this.gemLayoutAlgorithm.process(this.fsa) as FSAAutomaton;
-          this.endUpdate();
+          this.clearAll()
         })
       MenuItem({
         content: '最小化DFA'
@@ -177,9 +178,10 @@ struct FSAComponent {
             ToastUtil.showToast('该自动机不是 DFA');
             return;
           }
-          this.fsa = DFA.minimize(FSAAutomaton.getAutomaton(this.drawInvoker));
+          const preFsa = FSAAutomaton.getAutomaton(this.drawInvoker);
+          this.fsa = DFA.minimize(preFsa);
           this.fsa = this.gemLayoutAlgorithm.process(this.fsa) as FSAAutomaton;
-          this.endUpdate();
+          this.clearAll();
         })
       MenuItem({
         content: '删除文件'
@@ -202,6 +204,16 @@ struct FSAComponent {
             this.endUpdate();
           }
         })
+      MenuItem({
+        content: '创建测试文件'
+      })
+        .onClick(() => {
+          AutomatonCreator.save(easyFSA);
+          AutomatonCreator.save(normalFSA);
+          AutomatonCreator.save(nfaToDFATestFSA);
+          AutomatonCreator.save(minDFATestFSA);
+          ToastUtil.showToast('创建成功');
+        })
     }
   }
 
@@ -216,7 +228,7 @@ struct FSAComponent {
 
   build() {
     Navigation() {
-      DrawCanvas()
+      DrawCanvas({automatonType: AutomatonType.FSA})
     }
     .title(this.saveFile ? '修改' + this.saveFile.fileName : '新建有穷自动机')
     .titleMode(NavigationTitleMode.Mini)

@@ -30,7 +30,6 @@ export struct StateDetailWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
         }
         .margin({top: 15})
 

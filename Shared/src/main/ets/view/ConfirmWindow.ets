@@ -11,8 +11,9 @@ export struct ConfirmWindow {
     Stack() {
       Column() {
         Text(this.title)
-          .textAlign(TextAlign.Center)
-          .fontSize(20)
+          .textAlign(TextAlign.Start)
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
           .margin({top: 10})
 
         Text(this.label)

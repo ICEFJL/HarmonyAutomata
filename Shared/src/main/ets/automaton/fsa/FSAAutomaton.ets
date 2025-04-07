@@ -29,9 +29,14 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       }
     });
     draw.transitionMap.forEach((transitions) => {
+      // 合并所有 transition 的 label
+      let combinedLabel = transitions.map(transition => transition.label).join('');
+      combinedLabel = Array.from(new Set(combinedLabel)).join('')
+      // 使用合并后的 label 创建一个新的 Transition 对象
       const transition = transitions[transitions.length - 1];
-      fsa.addTransition(new Transition(transition.fromState.uuid, transition.toState.uuid, transition.label));
+      fsa.addTransition(new Transition(transition.fromState.uuid, transition.toState.uuid, combinedLabel));
     });
+
 
     return fsa;
   }
@@ -87,20 +92,32 @@ export class FSAAutomaton extends Automaton<State, Transition> {
     draw.update(drawArray,DrawType.CREATE, delArray);
   }
 
-  public getSuccessors(node: Node<FSAState>): Node<FSAState>[]{
-    const successors: Node<FSAState>[] = [];
-    const transitions: Transition[] = this.getTransitionsFromState(node.state.uuid);
-    const symbol = node.state.remaining[0]
+  public getNextState(uuid: number, remaining: string): FSAState[]{
+    let res : FSAState[] = [];
+    const symbol = remaining[0];
+    const transitions: Transition[] = this.getTransitionsFromState(uuid);
     for (const transition of transitions) {
       const label = transition.label;
-      const lambdaTransition = label.length === 0
+      const labelEmpty = label.includes(Const.EMPTY_STRING);
+      const labelSymbol = label.includes(symbol);
       const toState = this.getStateWithUuid(transition.to);
-      if(!toState || (!lambdaTransition && !label.includes(symbol))){
+      if (!toState || (!labelEmpty && !labelSymbol)) {
         continue;
       }
-      const graphState =new FSAState(lambdaTransition
-        ? node.state.remaining
-        : node.state.remaining.slice(1), lambdaTransition ? '' : symbol, toState);
+      if(labelSymbol){
+        res.push(new FSAState(remaining.slice(1), symbol, toState));
+      }
+      if(labelEmpty){
+        res.push(new FSAState(remaining, Const.EMPTY_STRING, toState));
+      }
+    }
+    return res;
+  }
+
+  public getSuccessors(node: Node<FSAState>): Node<FSAState>[]{
+    const successors: Node<FSAState>[] = [];
+    const res = this.getNextState(node.state.uuid, node.state.remaining);
+    for (const graphState of res) {
       const newNode = new Node<FSAState>(graphState, node);
       successors.push(newNode);
     }
@@ -116,7 +133,7 @@ export class FSAAutomaton extends Automaton<State, Transition> {
         charSet.add(char);
       }
     }
-    charSet.delete("");
+    charSet.delete(Const.EMPTY_STRING);
     return Array.from(charSet);
   }
 
@@ -226,6 +243,33 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       throw new Error('Failed to deserialize FSAAutomaton');
     }
   }
+
+  public deepCopy(): FSAAutomaton {
+    const newAutomaton = new FSAAutomaton();
+
+    // 1. 复制所有状态并建立映射
+    this.getStates().forEach(oldState => {
+      const newState = State.deepCopy(oldState);
+      newAutomaton.addState(newState);
+      if(this.isInitialState(oldState)){
+        newAutomaton.setInitialState(newState);
+      }
+    });
+
+    // 2. 复制转移，更新from/to为新状态的UUID
+    this.getTransitions().forEach(oldTransition => {
+      const newTransition = Transition.deepCopy(oldTransition)
+      newAutomaton.addTransition(newTransition);
+    });
+
+    // 3. 复制其他属性
+    newAutomaton.name = this.name;
+    newAutomaton.note = this.note;
+    newAutomaton.type = this.type;
+
+    return newAutomaton;
+  }
+
 }
 
 export function createTestAutomaton(): FSAAutomaton {
@@ -271,11 +315,6 @@ export function compareAutomatons(automaton1: FSAAutomaton, automaton2: FSAAutom
     LogUtil.error("Initial state mismatch.");
     return false;
   }
-
-  let state1 = new State()
-  LogUtil.debug(`state1的uuid:${state1.uuid}`);
-  let state2 = new State()
-  LogUtil.debug(`state2的uuid:${state2.uuid}`);
 
   // 比较状态
   const states1 = automaton1.getStates();

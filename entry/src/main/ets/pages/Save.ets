@@ -75,25 +75,26 @@ export struct Save{
                 .width(60)
                 .height(60)
                 .margin(5)
-              Column({ space: 5}) {
+              Column({ space: 10}) {
                 Row() {
                   Text(item.fileName)
                     .textAlign(TextAlign.Start)
-                    .fontSize(20)
+                    .fontSize(18)
                     .layoutWeight(1)
                   Text(item.fileType)
                     .textAlign(TextAlign.End)
-                    .fontSize(20)
-
+                    .fontSize(18)
                 }
                 Row() {
                   Text(item.note)
                     .textAlign(TextAlign.Start)
-                    .fontSize(20)
+                    .fontSize(18)
+                    .fontColor(Color.Gray)
                     .layoutWeight(1)
                   Text(item.getSaveTimeStr())
                     .textAlign(TextAlign.End)
-                    .fontSize(20)
+                    .fontColor(Color.Gray)
+                    .fontSize(18)
                 }
               }
               .layoutWeight(1)

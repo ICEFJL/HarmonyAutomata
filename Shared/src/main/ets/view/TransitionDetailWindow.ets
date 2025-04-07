@@ -65,6 +65,9 @@ export struct TransitionDetailWindow {
             .layoutWeight(1)
             .onClick(() => {
               this.labelName = Array.from(new Set(this.labelName)).join('');
+              if(this.labelName == ""){
+                this.labelName = Const.EMPTY_STRING;
+              }
               if (this.firstCreate){
                 this.mTransition.label = this.labelName;
                 this.drawInvoker.update([this.mTransition],DrawType.ADD);

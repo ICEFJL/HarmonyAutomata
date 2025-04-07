@@ -58,11 +58,11 @@ export class DrawTransition extends IDraw {
 
       this.x += px * Const.LINE_BAND_WIDTH / 2;
       this.y += py * Const.LINE_BAND_WIDTH / 2;
-      if(py < 0) {
+      if(py > 0) {
         labelOffset = -labelOffset;
       }
-      this.y += labelOffset;
     }
+    this.y -= labelOffset;
     //此处label最小长度改为5
     let str = this.label.length === 0 ? Const.EMPTY_STRING : this.label;
     if(this.label.length > 5){

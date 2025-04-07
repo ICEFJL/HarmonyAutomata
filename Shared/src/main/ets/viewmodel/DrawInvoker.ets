@@ -54,6 +54,7 @@ export default class DrawInvoker {
     let draw: DrawOperate = new DrawOperate();
     switch (type){
       case DrawType.ADD:
+      case DrawType.CREATE:
       case DrawType.UPDATE:
         draw = new DrawOperate(commands, type, preTransition);
         this.drawList.push(draw);
@@ -99,11 +100,6 @@ export default class DrawInvoker {
           this.drawList.push(draw);
           this.push(draw);
         }
-        break;
-      case DrawType.CREATE:
-        draw = new DrawOperate(commands, type, preTransition);
-        this.drawList.push(draw);
-        this.push(draw);
         break;
       default:
         break;

@@ -13,8 +13,8 @@ export class Transition {
   // 转移的标签
   label: string = "";
 
-  constructor(from: number, to: number, label: string = "") {
-    this.uuid = Uuid.index;
+  constructor(from: number, to: number, label: string = "", uuid: number = Uuid.index) {
+    this.uuid = uuid;
     this.from = from;
     this.to = to;
     this.setLabel(label);
@@ -22,5 +22,9 @@ export class Transition {
 
   public setLabel(label: string): void {
     this.label = label;
+  }
+
+  public static deepCopy(transition: Transition): Transition{
+    return new Transition(transition.from, transition.to, transition.label, transition.uuid);
   }
 }

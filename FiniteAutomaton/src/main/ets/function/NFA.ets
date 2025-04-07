@@ -1,4 +1,4 @@
-import { FSAAutomaton, Transition, State } from "shared";
+import { FSAAutomaton, Transition, State, Const } from "shared";
 
 export class NFA {
   public static isNFA(automaton: FSAAutomaton): boolean {
@@ -8,7 +8,7 @@ export class NFA {
       const labels = transitions.map(transition => transition.label);
 
       // 检查是否存在空字符串
-      if (labels.includes("")) {
+      if (labels.includes(Const.EMPTY_STRING)) {
         return true;
       }
 
@@ -35,18 +35,18 @@ export class NFA {
       closureCache.set(state.uuid, NFA.getClosure(state.uuid, nfa));
     });
 
-    const dfa = new FSAAutomaton();
-    dfa.setName(nfa.name);
-    dfa.setNote(nfa.note);
-
     const initialStateClosure = closureCache.get(initialState.uuid)!;
     const initialStateKey = NFA.getStringForStates(initialStateClosure);
     const frontier: string[] = [initialStateKey];
     const visitedStates = new Map<string, Set<number>>(); // 已访问状态集合的缓存
     const transitionMap = new Map<string, string>();
     const alphabet = FSAAutomaton.getAlphabet(nfa);
-    const accept = new Set(dfa.getStates().filter(s => s.isFinal).map(s => s.uuid));
+    const accept = new Set(nfa.getStates().filter(s => s.isFinal).map(s => s.uuid));
     const dfaMap = new Map<string, number>();
+
+    const dfa = new FSAAutomaton();
+    dfa.setName(nfa.name);
+    dfa.setNote(nfa.note);
 
     visitedStates.set(initialStateKey, initialStateClosure);
 
@@ -62,15 +62,19 @@ export class NFA {
         if (!visitedStates.has(nextStatesKey)) {
           visitedStates.set(nextStatesKey, nextStates);
           frontier.push(nextStatesKey);
-        } else {
-          transitionMap[currentStateKey + "-" + nextStatesKey] += symbol;
         }
-
+        const transitionKey = currentStateKey + "-" + nextStatesKey;
+        if(!transitionMap.has(transitionKey)){
+          transitionMap.set(transitionKey, symbol);
+        } else {
+          transitionMap.set(transitionKey, transitionMap.get(transitionKey)! + symbol);
+        }
       }
     }
 
     visitedStates.forEach((states, currentStateKey) => {
       const newState = new State();
+      newState.setName(NFA.getNameForStates(states, nfa))
       for(const state of states){
         if(accept.has(state)){
           newState.isFinal = true;
@@ -96,11 +100,18 @@ export class NFA {
 
     return dfa;
   }
+  private static getSortStates(states: Set<number>): number[]{
+    return Array.from(states).sort((a, b) => a - b);
+  }
 
   private static getStringForStates(states: Set<number>): string {
-    return Array.from(states)
-      .sort((a, b) => a - b)
-      .join(', ');
+    return NFA.getSortStates(states).join(',');
+  }
+
+  private static getNameForStates(states: Set<number>, automaton: FSAAutomaton): string {
+    return NFA.getSortStates(states)
+      .map(uuid => automaton.getStateWithUuid(uuid)?.name)
+      .join(',');
   }
 
   private static getStatesOnTerminal(
@@ -125,7 +136,7 @@ export class NFA {
     return result;
   }
 
-  private static getClosure(state: number, automaton: FSAAutomaton): Set<number> {
+  public  static getClosure(state: number, automaton: FSAAutomaton): Set<number> {
     const closure = new Set<number>();
     const queue = [state]; // 使用队列实现BFS遍历
 
@@ -135,7 +146,7 @@ export class NFA {
       const currentState = queue.shift()!;
       const transitions = automaton.getTransitionsFromState(currentState);
       for (const transition of transitions) {
-        if (transition.label === "") {
+        if (transition.label.includes(Const.EMPTY_STRING)) {
           const toState = automaton.getStateWithUuid(transition.to);
           if (toState && !closure.has(toState.uuid)) {
             closure.add(toState.uuid);

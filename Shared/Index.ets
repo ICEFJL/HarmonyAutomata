@@ -10,7 +10,7 @@ export { Node, AutomatonType, ExecutionTrace, ExecutionResult } from './src/main
 
 export { FSAAutomaton, createTestAutomaton, compareAutomatons } from './src/main/ets/automaton/fsa/FSAAutomaton'
 
-export { DrawCanvas } from './src/main/ets/components/DrawCanvas'
+export { DrawCanvas, globalContext } from './src/main/ets/components/DrawCanvas'
 
 export { StateDetailWindow } from './src/main/ets/view/StateDetailWindow'
 

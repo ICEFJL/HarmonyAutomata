@@ -1,9 +1,13 @@
+import minDFATest from './minDFA.test'
+import nfaToDFATest from './nfaToDFA.test'
 import takeClosureTest from './takeClosure.test'
 import IsNFATest from './IsNFA.test'
-import localUnitTest from './LocalUnit.test';
+import simulateTest from './simulate.test';
 
 export default function testsuite() {
-  localUnitTest();
+  simulateTest();
   IsNFATest()
   takeClosureTest()
+  nfaToDFATest()
+  minDFATest()
 }

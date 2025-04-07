@@ -30,7 +30,7 @@ export struct SaveFileWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
+            .maxLength(20)
             .focusable(this.isShow)
         }
         .margin({top: 15})

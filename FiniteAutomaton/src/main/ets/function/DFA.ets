@@ -26,6 +26,7 @@ export class DFA{
 
     // 3. 迭代分割分区
     let changed = true;
+
     while (changed) {
       changed = false;
       const newPartitions: Set<number>[] = [];
@@ -69,21 +70,26 @@ export class DFA{
     // 4. 构建最小化DFA
     const newStates = new Map<number, number>();
     const minimized = new FSAAutomaton();
+    const represents: number[] = [];
     for (const partition of partitions) {
       const p = Array.from(partition);
-      const t = p[0];
+      const representative = p[0];
+      const newState = State.deepCopy(dfa.getStateWithUuid(representative)!);
+      minimized.addState(newState);
       for(const stateId of p){
-        newStates.set(stateId, t);
-        minimized.addState(State.deepCopy(dfa.getStateWithUuid(stateId)!));
+        newStates.set(stateId, representative);
+        if(stateId == dfa.initialState.uuid){
+          minimized.initialState = newState;
+        }
       }
+      represents.push(representative);
     }
 
-    for (const fromState of newStates.values()) {
-      const transitions = dfa.getTransitionsFromState(fromState);
-      for (const transition of transitions) {
-        const toState = newStates.get(transition.to);
-        if(toState){
-          minimized.addTransition(new Transition(fromState, toState, transition.label));
+    for(const represent of represents){
+      for (const symbol of alphabet) {
+        const trans = dfa.getTransitionsFromState(represent).find(t => t.label.includes(symbol));
+        if (trans) {
+          minimized.addTransition(new Transition(represent, newStates.get(trans.to)!, symbol));
         }
       }
     }

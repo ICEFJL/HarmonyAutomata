@@ -11,7 +11,8 @@ export struct ResultWindow {
       Column() {
         Text(this.title)
           .textAlign(TextAlign.Center)
-          .fontSize(20)
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
           .margin({top: 10})
 
         Text(this.label)
