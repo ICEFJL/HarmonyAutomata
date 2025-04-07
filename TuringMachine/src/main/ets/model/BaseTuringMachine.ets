@@ -6,6 +6,7 @@ import 'reflect-metadata';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import { BusinessError } from '@kit.BasicServicesKit';
 import {StepLog,TuringResult} from './runResultLog'
+import { TuringError } from './TuringError'
 
 export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   constructor() {
@@ -333,12 +334,104 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     return str.substring(0, end + 1);
   }
 
+  //图灵机错误检测
+  private _validateStateSystem(): void {
+    // 1. 空状态集合检测
+    if (this.states.size === 0) {
+      throw new Error(TuringError[1004]); // EmptyStateSet
+    }
+
+    // 2. 初始状态检测
+    if (!this.initialState) {
+      throw new Error(TuringError[1001]); // NoInitialState
+    }
+
+    // 3. 状态名称唯一性
+    const nameSet = new Set<string>();
+    this.states.forEach(state => {
+      if (nameSet.has(state.name)) {
+        throw new Error(TuringError[1003] + " " + state.name); // DuplicateState
+      }
+      nameSet.add(state.name);
+    });
+
+    // 4. 终态可达性（BFS实现）
+    this._validateFinalStatesReachable();
+
+    // 5. 孤立状态检测
+    const connectedStates = new Set<number>();
+    this.transitions.forEach(transition => {
+      connectedStates.add(transition.from);
+      connectedStates.add(transition.to);
+    });
+
+    // 检测未连接到任何转移的状态
+    this.states.forEach(state => {
+      if (!connectedStates.has(state.uuid)) {
+        throw new Error(TuringError[1005] + " " + state.name); // IsolatedState
+      }
+    });
+  }
+
+  private _validateFinalStatesReachable(): void {
+    const finalStates = Array.from(this.states).filter(s => s.isFinal);
+    if (finalStates.length === 0) {
+      return;
+    }
+
+    const visited = new Set<number>();
+    const queue: number[] = [this.initialState!.uuid];
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      if (visited.has(currentId)) {
+        continue;
+      }
+      visited.add(currentId);
+
+      if (finalStates.some(fs => fs.uuid === currentId)) {
+        return;
+      }
+
+      this.getTransitionsFromState(currentId).forEach(t => {
+        if (!visited.has(t.to)) {
+          queue.push(t.to);
+        }
+      });
+    }
+    throw new Error(TuringError[1002]); // UnreachableFinalState
+  }
+
+  private _validateTransitionRules(): void {
+    this.transitions.forEach(t => {
+      // 1. 状态存在性验证
+      if (!this.getStateWithUuid(t.from) || !this.getStateWithUuid(t.to)) {
+        throw new Error(`${TuringError[2001]} [From:${t.from}, To:${t.to}]`); // InvalidTransition
+      }
+    })
+  }
+
+  private _validateSymbolSystem(): void {
+    const tapeSymbols = this.showSymbols().split(' ');
+    const inputSymbols: string[] = Array.from(new Set(this.initialTape.split('')));
+
+    // 未定义符号出现
+    if (inputSymbols.some(s =>!tapeSymbols.includes(s))) {
+      throw new Error(`${TuringError[3001]}`);
+    }
+
+  }
+
   //存储单带图灵机仿真过程
   public runResultLog(): TuringResult {
     const logEntries: StepLog[] = []; // 显式声明数组类型[3](@ref)
     let stepCount = 0;
 
     try {
+      //状态预检测
+      //this._validateStateSystem();
+      //this._validateTransitionRules();
+      //this._validateSymbolSystem();
       // 记录初始状态（step 0）
       logEntries.push({
         step: stepCount,
@@ -363,6 +456,12 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
           transition: this.getCurrentTransitionName(),
           tape: this.getCurrentTape()
         });
+        if (stepCount > this.maxStep) {
+          throw new Error(TuringError[4002]);
+        }
+        if (this.tape.size > this.maxTape) {
+          throw new Error(TuringError[4001]);
+        }
         console.log(`Step ${stepCount}:`);
         console.log("Head Position:", this.headPosition+1);
         console.log("Current Symbol:", this.getCurrentSymbol());
@@ -370,11 +469,10 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
         console.log("-------------------");
       }
     } catch (e) {
-      // 异常处理（类型安全）
-      const errorMsg = e instanceof Error ? e.message : 'Unknown execution error';
+      const err = e as Error;
       return {
         logs: logEntries,
-        error: `Execution failed: ${errorMsg}`, // 错误信息格式化
+        error: ` ${err}`, // 错误信息格式化
         finalTape: this.getFinalTape(this.getCurrentTape()),
         finalStep:stepCount
       };

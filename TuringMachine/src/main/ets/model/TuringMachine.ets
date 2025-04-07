@@ -2,6 +2,7 @@ import { State, AutomatonType, Const } from 'shared'
 import {TuringTransition} from './TuringTransition'
 import 'reflect-metadata';
 import { Uuid } from 'shared/src/main/ets/automaton/function/Uuid'
+import { TuringError } from './TuringError'
 
 export abstract class TuringMachine<S extends State, T extends TuringTransition> {
   // 唯一标识
@@ -20,6 +21,10 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   protected currentTape: string = "";
   protected currentState: S | null;
   private currentTransition: T | null = null;
+  //最大步数与simulateTM界面保持一致
+  readonly maxStep: number = 1000;
+  //纸带最大长度设为10000
+  readonly maxTape: number = 10000;
   // 自动机的初始状态
   initialState: S | null;
   note: string;
@@ -38,6 +43,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     this.blank = Const.EMPTY_STRING;
     this.tape = new Map<number, string>(); // 纸带Σ* (稀疏存储)
     this.headPosition = 0;
+    this.initialTape = "";
     this.currentState = null;
     this.currentTape = "";
     this.update = false;
@@ -116,7 +122,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
       symbols.add(transition.readSymbol);
       symbols.add(transition.writeSymbol);
     }
-    symbols.add("ε")
+    symbols.add(Const.EMPTY_STRING);
     const showStr = Array.from(symbols);
     return showStr.join(' ');
   }
@@ -128,10 +134,13 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   //输入字母表
   public showEnterSymbols(): string {
-    const charArray: string[] = this.initialTape.split('');
-    const uniqueCharSet: Set<string> = new Set(charArray);
-    const result: string = Array.from(uniqueCharSet).join(' ');
-    return result;
+    const charArray = this.initialTape.split('');
+    const uniqueCharSet = new Set<string>();
+    for (const char of charArray) {
+      uniqueCharSet.add(char);
+    }
+    const result = Array.from(uniqueCharSet);
+    return result.join(' ');
   }
 
   //移动函数
@@ -295,7 +304,6 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
   /** 初始化纸带内容 */
   public initializeTape(input: string, startPosition: number = 0): void {
-    this.tape.clear(); // 清空历史数据
     this.initialTape = input;
     // 仅写入非空白符号
     input.split('').forEach((char, index) => {
@@ -310,6 +318,22 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
   /** 获取当前读写头位置的符号 */
   public getCurrentSymbol(): string {
     return this.tape.get(this.headPosition) || this.blank;
+  }
+
+  // 生成状态哈希（含纸带、读写头、当前状态）生成图灵机当前运行状态的唯一哈希值
+  private _generateStateHash(): string {
+    // 添加空值断言
+    if (!this.currentState) {
+      throw new Error(TuringError[1001]); // 抛出"无初始状态"错误
+    }
+
+    const tapeStr = Array.from(this.tape)
+      .sort((a, b) => a[0] - b[0])
+      .map(entry => `${entry[0]}:${entry[1]}`)
+      .join('|');
+
+    // 使用非空断言操作符(!)
+    return `${this.currentState!.uuid}-${this.headPosition}-${tapeStr}`;
   }
 
   /** 执行单步计算 */
@@ -346,7 +370,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     // 确定型检查：必须恰好一个转移
     if (validTransitions.length !== 1) {
       console.log('不符合转移函数确定性要求，图灵机终止');
-      return false;
+      throw new Error(TuringError[2002]);
     }
 
     const transition = validTransitions[0];
@@ -370,8 +394,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
       case 'S': // 不动
         break;
       default:  // 处理其他方向（如不移动或无效输入）
-        console.error("wrong moveDirection!");
-        break;
+        throw new Error(`${TuringError[2003]} `);
     }
     const newState = Array.from(this.states).find(s => s.uuid === transition.to);
     this.currentState = newState || null;

@@ -1,7 +1,6 @@
 import router from '@ohos.router';
 import {BaseTuringMachine} from '../model/BaseTuringMachine'
 import {TuringResult,StepLog} from '../model/runResultLog'
-import { autoFillManager } from '@kit.AbilityKit';
 
 @Entry
 @Component
@@ -13,6 +12,7 @@ struct SimulateTM {
   @State result:TuringResult={
     logs:[],
     finalTape:"",
+    error: undefined,
     finalStep:0
   }
   @State stepLog:StepLog={
@@ -32,7 +32,7 @@ struct SimulateTM {
 
   tm=new BaseTuringMachine();
   //设最大步数为五十步
-  maxStep:number=50;
+  readonly maxStep: number = 1000;
 
   onPageShow() {
     const data: string = this.params['data'];
@@ -43,7 +43,6 @@ struct SimulateTM {
     this.showFinalStates = this.tm.showFinalStates();
     this.showSymbols = this.tm.showSymbols();
     this.showBlankSymbol = this.tm.showBlankSymbol();
-    this.showEnterSymbols = this.tm.showEnterSymbols();
     this.showTransitions = this.tm.showTransitions();
   }
 
@@ -74,6 +73,7 @@ struct SimulateTM {
           this.ifFinal=false;
           this.stepCount=0;
           this.tm.initializeTape(this.initialTape);
+          this.showEnterSymbols = this.tm.showEnterSymbols();
           this.result=this.tm.runResultLog();
           const specificLog = this.result.logs.find(log => log.step === this.stepCount);
           if (specificLog) {
@@ -211,12 +211,13 @@ struct SimulateTM {
           .fontSize(20)
           .margin({left: 10})
         TextInput({
-          text:`${this.result.finalTape}`,
+          text: this.result.error ? this.result.error : this.result.finalTape,
         })
           .fontSize(20)
           .margin({right: 10})
           .width("75%")
           .enabled(false) // 关键属性控制只读
+          .fontColor(this.result.error ? Color.Red : Color.Black)// 错误时文字变红
           .backgroundColor('#f5f5f5') // 视觉提示
       }
       .margin({top:10})
