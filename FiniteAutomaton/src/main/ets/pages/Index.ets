@@ -6,15 +6,10 @@ import {
   HelpUtil,
   SavedFile,
   SaveFileWindow,
-  simulateFSA,
+  simulateFSA, DFA, NFA,
   SimulateWindow,
   State, Transition} from 'shared';
-import { DFA } from '../function/DFA';
-import { NFA } from '../function/NFA';
 import { ResultWindow } from '../view/ResultWindow';
-import { common, Want } from '@kit.AbilityKit';
-import { router, window } from '@kit.ArkUI';
-import { BusinessError } from '@kit.BasicServicesKit';
 import { funcAbilityWant } from '../finiteautomatonability/FiniteAutomatonAbility';
 import { AutomatonCreator } from '../test/AutomatonCreator';
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../test/TestAutomaton';

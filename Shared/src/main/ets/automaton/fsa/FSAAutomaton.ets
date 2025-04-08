@@ -11,7 +11,7 @@ import { DrawState } from '../../viewmodel/DrawState';
 import { DrawTransition } from '../../viewmodel/DrawTransition';
 import { IDraw } from '../../viewmodel/IDraw';
 import { Const, DrawType, SavedFile } from '../../../../../Index';
-import { FSAState } from './simulateFSA';
+import { FSAState } from './function/simulateFSA';
 
 export class FSAAutomaton extends Automaton<State, Transition> {
   constructor() {
@@ -36,7 +36,6 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       const transition = transitions[transitions.length - 1];
       fsa.addTransition(new Transition(transition.fromState.uuid, transition.toState.uuid, combinedLabel));
     });
-
 
     return fsa;
   }
@@ -122,84 +121,6 @@ export class FSAAutomaton extends Automaton<State, Transition> {
       successors.push(newNode);
     }
     return successors;
-  }
-
-  public static getAlphabet(automaton: FSAAutomaton): string[] {
-    const transitions = automaton.getTransitions();
-    const charSet = new Set<string>();
-    for (const transition of transitions) {
-      const label = transition.label;
-      for (const char of label) {
-        charSet.add(char);
-      }
-    }
-    charSet.delete(Const.EMPTY_STRING);
-    return Array.from(charSet);
-  }
-
-  public static getUnreachableStates(automaton: FSAAutomaton): State[] {
-    const allStates = automaton.getStates(); // 直接获取状态对象列表
-
-    if (!automaton.initialState) {
-      return allStates; // 无初始状态时返回所有状态对象
-    }
-
-    const initialId = automaton.initialState.uuid;
-    const visited = new Set<number>();
-    const queue = [initialId];
-
-    while (queue.length > 0) {
-      const stateId = queue.shift()!;
-      if (visited.has(stateId)) continue;
-      visited.add(stateId);
-
-      const transitions = automaton.getTransitionsFromState(stateId);
-      for (const trans of transitions) {
-        const target = trans.to;
-        if (!visited.has(target)) {
-          queue.push(target);
-        }
-      }
-    }
-
-    return allStates.filter(state => !visited.has(state.uuid));
-  }
-
-  public static getDeadStates(automaton: FSAAutomaton): State[] {
-    const allStates = automaton.getStates();
-    const finalStates = allStates.filter(state => state.isFinal);
-    const finalIds = new Set(finalStates.map(s => s.uuid));
-
-    if (finalIds.size === 0) {
-      return allStates; // 无终态时所有状态均为死状态
-    }
-
-    const visited = new Set(finalIds);
-    const queue = Array.from(finalIds);
-    // 缓存前驱映射
-    const predecessorMap = new Map<number, number[]>();
-    automaton.getTransitions().forEach(t => {
-      if (!predecessorMap.has(t.to)) {
-        predecessorMap.set(t.to, []);
-      }
-      predecessorMap.get(t.to)!.push(t.from);
-    });
-
-    while (queue.length > 0) {
-      const currentStateId = queue.shift()!;
-      // 收集所有前驱状态（反向遍历）
-      const predecessors = predecessorMap.get(currentStateId) || [];
-
-      for (const predecessorId of predecessors) {
-        if (!visited.has(predecessorId)) {
-          visited.add(predecessorId);
-          queue.push(predecessorId);
-        }
-      }
-    }
-
-    // 筛选出无法到达终态的状态
-    return allStates.filter(state => !visited.has(state.uuid));
   }
 
   public static loadFromFile(dirPath: string = "", fileName: string = "test"): FSAAutomaton {

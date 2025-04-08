@@ -1,4 +1,4 @@
-import { FSAAutomaton, State, Transition } from "shared";
+import { FSA, FSAAutomaton, State, Transition } from "shared";
 import { NFA } from "./NFA";
 
 export class DFA{
@@ -8,18 +8,18 @@ export class DFA{
     if (NFA.isNFA(dfa)) throw new Error("必须传入DFA");
     if (!dfa.initialState) throw new Error("DFA必须包含初始状态");
 
-    const unreachableStates = FSAAutomaton.getUnreachableStates(dfa);
+    const unreachableStates = FSA.getUnreachableStates(dfa);
     for(const state of unreachableStates){
       dfa.removeState(state);
     }
 
-    const deadStates = FSAAutomaton.getDeadStates(dfa);
+    const deadStates = FSA.getDeadStates(dfa);
     for(const state of deadStates){
       dfa.removeState(state);
     }
 
     // 2. 初始化分区（接受态与非接受态）
-    const alphabet = FSAAutomaton.getAlphabet(dfa);
+    const alphabet = FSA.getAlphabet(dfa);
     const initialAccept = new Set(dfa.getStates().filter(s => s.isFinal).map(s => s.uuid));
     const initialNonAccept = new Set(dfa.getStates().filter(s => !s.isFinal).map(s => s.uuid));
     let partitions = [initialAccept, initialNonAccept];

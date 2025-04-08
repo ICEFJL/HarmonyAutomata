@@ -1,6 +1,6 @@
-import {State} from '../State'
-import { ExecutionResult, ExecutionTrace, Node } from '../Type';
-import { FSAAutomaton } from './FSAAutomaton';
+import {State} from '../../State'
+import { ExecutionResult, ExecutionTrace, Node } from '../../Type';
+import { FSAAutomaton } from '../FSAAutomaton';
 
 export class FSAState extends State{
   readonly remaining: string = '';

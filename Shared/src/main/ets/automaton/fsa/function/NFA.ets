@@ -1,4 +1,4 @@
-import { FSAAutomaton, Transition, State, Const } from "shared";
+import { FSAAutomaton, Transition, State, Const, FSA } from "shared";
 
 export class NFA {
   public static isNFA(automaton: FSAAutomaton): boolean {
@@ -40,7 +40,7 @@ export class NFA {
     const frontier: string[] = [initialStateKey];
     const visitedStates = new Map<string, Set<number>>(); // 已访问状态集合的缓存
     const transitionMap = new Map<string, string>();
-    const alphabet = FSAAutomaton.getAlphabet(nfa);
+    const alphabet = FSA.getAlphabet(nfa);
     const accept = new Set(nfa.getStates().filter(s => s.isFinal).map(s => s.uuid));
     const dfaMap = new Map<string, number>();
 

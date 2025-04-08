@@ -44,6 +44,12 @@ export { FSAState,
   FSAExecutionTrace,
   FSAExecutionResult,
   generateTrace,
-  simulateFSA } from './src/main/ets/automaton/fsa/simulateFSA'
+  simulateFSA } from './src/main/ets/automaton/fsa/function/simulateFSA'
 
 export { SimulateWindow } from './src/main/ets/view/SimulateWindow'
+
+export { NFA } from './src/main/ets/automaton/fsa/function/NFA'
+
+export { FSA } from './src/main/ets/automaton/fsa/function/FSA'
+
+export { DFA } from './src/main/ets/automaton/fsa/function/DFA'

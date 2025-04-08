@@ -1,8 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { DFA } from '../main/ets/function/DFA'
-import { FSA } from '../main/ets/function/FSA'
-import { NFA } from '../main/ets/function/NFA';
-import { simulateFSA } from 'shared/src/main/ets/automaton/fsa/simulateFSA';
+import { DFA, NFA, FSA, simulateFSA } from 'shared'
 import { AutomatonCreator } from '../main/ets/test/AutomatonCreator'
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../main/ets/test/TestAutomaton';
 import { nfaToDFATestFSA_RES, minimizedNormalFSA, minDFATestFSA_RES } from '../main/ets/test/TestResultAutomaton';
