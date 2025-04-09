@@ -1,4 +1,4 @@
-import {Transition,State,HelpUtil,Const } from 'shared'
+import { State, HelpUtil, Const } from 'shared'
 import {globalContext } from 'shared/src/main/ets/components/DrawCanvas'
 import {TuringTransition} from '../model/TuringTransition'
 import {TuringMachine} from '../model/TuringMachine'

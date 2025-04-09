@@ -6,6 +6,7 @@ import 'reflect-metadata';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import { BusinessError } from '@kit.BasicServicesKit';
 import {StepLog,TuringResult} from './runResultLog'
+import { TuringError } from './TuringError'
 
 export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   constructor() {
@@ -100,87 +101,6 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
       }
     });
   }
-
-  public static getAlphabet(automaton: BaseTuringMachine): string[] {
-    const transitions = automaton.getTransitions();
-    const charSet = new Set<string>();
-    for (const transition of transitions) {
-      const label = transition.label;
-      for (const char of label) {
-        charSet.add(char);
-      }
-    }
-    charSet.delete("");
-    return Array.from(charSet);
-  }
-
-  public static getUnreachableStates(automaton: BaseTuringMachine): State[] {
-    const allStates = automaton.getStates(); // 直接获取状态对象列表
-
-    if (!automaton.initialState) {
-      console.log("无初态");
-      return allStates; // 无初始状态时返回所有状态对象
-    }
-
-    const initialId = automaton.initialState.uuid;
-    const visited = new Set<number>();
-    const queue = [initialId];
-
-    while (queue.length > 0) {
-      const stateId = queue.shift()!;
-      if (visited.has(stateId)) continue;
-      visited.add(stateId);
-
-      const transitions = automaton.getTransitionsFromState(stateId);
-      for (const trans of transitions) {
-        const target = trans.to;
-        if (!visited.has(target)) {
-          queue.push(target);
-        }
-      }
-    }
-
-    return allStates.filter(state => !visited.has(state.uuid));
-  }
-
-  public static getDeadStates(automaton: BaseTuringMachine): State[] {
-    const allStates = automaton.getStates();
-    const finalStates = allStates.filter(state => state.isFinal);
-    const finalIds = new Set(finalStates.map(s => s.uuid));
-
-    if (finalIds.size === 0) {
-      console.log("无终态");
-      return allStates; // 无终态时所有状态均为死状态
-    }
-
-    const visited = new Set(finalIds);
-    const queue = Array.from(finalIds);
-    // 缓存前驱映射
-    const predecessorMap = new Map<number, number[]>();
-    automaton.getTransitions().forEach(t => {
-      if (!predecessorMap.has(t.to)) {
-        predecessorMap.set(t.to, []);
-      }
-      predecessorMap.get(t.to)!.push(t.from);
-    });
-
-    while (queue.length > 0) {
-      const currentStateId = queue.shift()!;
-      // 收集所有前驱状态（反向遍历）
-      const predecessors = predecessorMap.get(currentStateId) || [];
-
-      for (const predecessorId of predecessors) {
-        if (!visited.has(predecessorId)) {
-          visited.add(predecessorId);
-          queue.push(predecessorId);
-        }
-      }
-    }
-
-    // 筛选出无法到达终态的状态
-    return allStates.filter(state => !visited.has(state.uuid));
-  }
-
 
   public createExample(): BaseTuringMachine {
     const tm = new BaseTuringMachine();
@@ -333,12 +253,106 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
     return str.substring(0, end + 1);
   }
 
+  //图灵机错误检测
+  private _validateStateSystem(): void {
+    // 1. 空状态集合检测
+    if (this.states.size === 0) {
+      throw new Error(TuringError.EmptyStateSet); // EmptyStateSet
+    }
+
+    // 2. 初始状态检测
+    if (!this.initialState) {
+      throw new Error(TuringError.NoInitialState); // NoInitialState
+    }
+
+    // 3. 状态名称唯一性
+    const nameSet = new Set<string>();
+    this.states.forEach(state => {
+      if (nameSet.has(state.name)) {
+        throw new Error(TuringError.DuplicateState + " " + state.name); // DuplicateState
+      }
+      nameSet.add(state.name);
+    });
+
+    // 4. 终态可达性（BFS实现）
+    this._validateFinalStatesReachable();
+
+
+  }
+
+  private _validateFinalStatesReachable(): void {
+    // 获取所有终态集合（需至少存在一个终态）
+    const finalStates = Array.from(this.states).filter(s => s.isFinal);
+    if (finalStates.length === 0) {
+      throw new Error(TuringError.NoFinalState); // 终态集合为空错误
+    }
+
+    // BFS遍历初始化（使用状态UUID作为唯一标识）
+    const visited = new Set<number>();
+    const queue: number[] = [this.initialState!.uuid];
+
+    // 广度优先搜索路径探测
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      if (visited.has(currentId)) {
+        continue;
+      }
+      visited.add(currentId);
+
+      // 发现可达终态立即终止验证
+      if (finalStates.some(fs => fs.uuid === currentId)) {
+        return;
+      }
+
+      // 收集当前状态所有出边目标状态
+      this.getTransitionsFromState(currentId).forEach(t => {
+        if (!visited.has(t.to)) {
+          queue.push(t.to);
+        }
+      });
+    }
+
+    // 遍历完成仍未发现可达终态
+    throw new Error(TuringError.UnreachableFinalState);
+  }
+
+  private _validateSymbolSystem(): void {
+    // 1. 收集合法符号集（含转移规则中的读写符号和空白符）
+    const validSymbols = new Set<string>();
+    this.transitions.forEach(t => {
+      validSymbols.add(t.readSymbol);
+      validSymbols.add(t.writeSymbol);
+    });
+    validSymbols.add(this.blank);
+
+    // 2. 验证纸带符号是否合法
+    this.tape.forEach((symbol, pos) => {
+      if (!validSymbols.has(symbol)) {
+        throw new Error("纸带" + TuringError.UndefinedSymbol + `"${symbol}"`);
+      }
+    });
+
+    // 3. 验证转移规则中的符号合法性（防御性编程）
+    this.transitions.forEach(t => {
+      if (!validSymbols.has(t.readSymbol)) {
+        throw new Error(`转移规则 ${t.label} 读取符号 "${t.readSymbol}" 未定义`);
+      }
+      if (!validSymbols.has(t.writeSymbol)) {
+        throw new Error(`转移规则 ${t.label} 写入符号 "${t.writeSymbol}" 未定义`);
+      }
+    });
+  }
+
+
   //存储单带图灵机仿真过程
   public runResultLog(): TuringResult {
     const logEntries: StepLog[] = []; // 显式声明数组类型[3](@ref)
     let stepCount = 0;
 
     try {
+      //状态预检测
+      this._validateStateSystem();
+      this._validateSymbolSystem();
       // 记录初始状态（step 0）
       logEntries.push({
         step: stepCount,
@@ -363,6 +377,12 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
           transition: this.getCurrentTransitionName(),
           tape: this.getCurrentTape()
         });
+        if (stepCount > this.maxStep) {
+          throw new Error(TuringError.MaxStepExceeded);
+        }
+        if (this.tape.size > this.maxTape) {
+          throw new Error(TuringError.TapeOverflow);
+        }
         console.log(`Step ${stepCount}:`);
         console.log("Head Position:", this.headPosition+1);
         console.log("Current Symbol:", this.getCurrentSymbol());
@@ -370,11 +390,10 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
         console.log("-------------------");
       }
     } catch (e) {
-      // 异常处理（类型安全）
-      const errorMsg = e instanceof Error ? e.message : 'Unknown execution error';
+      const err = e as Error;
       return {
         logs: logEntries,
-        error: `Execution failed: ${errorMsg}`, // 错误信息格式化
+        error: ` ${err}`, // 错误信息格式化
         finalTape: this.getFinalTape(this.getCurrentTape()),
         finalStep:stepCount
       };

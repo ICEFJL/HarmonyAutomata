@@ -97,14 +97,14 @@ struct TMComponent {
     Menu() {
       MenuItem({ content: '保存文件' })
         .onClick(() => {
-          if(!this.drawInvoker.initialState){
-            ToastUtil.showToast('缺乏初始状态，无法执行');
-            return;
-          }
           this.saveFileWindow.open();
         })
       MenuItem({ content: '仿真验证' })
         .onClick(() => {
+          if (!this.saveFile) {
+            ToastUtil.showToast('尚未保存');
+            return;
+          }
           const tm: string =this.tm.serialize();
           router.push({
             url:'pages/SimulateTM',
@@ -115,6 +115,7 @@ struct TMComponent {
         .onClick(() => {
           if(!this.saveFile){
             ToastUtil.showToast('尚未保存');
+            return;
           }
           this.title = '删除文件';
           this.label = '确定删除该文件吗？';
