@@ -387,11 +387,11 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     const newState = Array.from(this.states).find(s => s.uuid === transition.to);
     this.currentState = newState || null;
 
-
     this.updateTapeString();
 
     return true;
   }
+
 
   /** 完全重置计算状态 */
   public reset(): void {

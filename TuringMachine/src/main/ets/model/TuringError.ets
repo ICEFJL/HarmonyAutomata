@@ -16,6 +16,5 @@ export enum TuringError {
 
   // 运行时错误（4xxx）
   TapeOverflow = "纸带长度超过限制", // 纸带长度超过限制
-  MaxStepExceeded = "超过最大计算步数", // 超过最大计算步数
-  InfiniteLoopDetected = "检测到无限循环" // 检测到无限循环
+  MaxStepExceeded = "超过最大计算步数，潜在死循环", // 超过最大计算步数
 }
