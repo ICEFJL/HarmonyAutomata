@@ -1,6 +1,7 @@
 import router from '@ohos.router';
 import {BaseTuringMachine} from '../model/BaseTuringMachine'
 import {TuringResult,StepLog} from '../model/runResultLog'
+import { MeasureText } from '@kit.ArkUI';
 
 @Entry
 @Component
@@ -29,6 +30,7 @@ struct SimulateTM {
   @State showBlankSymbol: string = "";
   @State showEnterSymbols: string = "";
   @State showTransitions: string[] = [];
+  @State textWidth: number = 950; // 初始宽度
 
   tm=new BaseTuringMachine();
   //设最大步数为五十步
@@ -125,7 +127,12 @@ struct SimulateTM {
           })
         }
         .alignItems(VerticalAlign.Top) // Row 内顶部对齐
-        .margin({ top: 10, left: 10, right: 10 })
+        .margin({
+          top: 10,
+          left: 10,
+          right: 10,
+          bottom: 10
+        })
         .width('75%')
       }
       .border({
@@ -210,15 +217,29 @@ struct SimulateTM {
         Text("仿真结果")
           .fontSize(20)
           .margin({left: 10})
-        TextInput({
-          text: this.result.error ? this.result.error : this.result.finalTape,
-        })
-          .fontSize(20)
-          .margin({right: 10})
-          .width("75%")
-          .enabled(false) // 关键属性控制只读
-          .fontColor(this.result.error ? Color.Red : Color.Black)// 错误时文字变红
-          .backgroundColor('#f5f5f5') // 视觉提示
+        Scroll() {
+          TextInput({
+            text: this.result.error ? this.result.error : this.result.finalTape,
+          })
+            .width(`${this.textWidth}px`)// 动态绑定宽度
+            .onChange((value: string) => {
+              // 测量文本宽度（直接获取数值）
+              const textWidth = MeasureText.measureText({
+                textContent: value,
+                fontSize: 20,
+                fontWeight: FontWeight.Normal
+              });
+              this.textWidth = Math.max(950, textWidth); // 设置最小宽度100px
+            })
+            .maxLines(1)
+            .margin({ right: 10 })
+            .enabled(false)
+            .fontColor(this.result.error ? Color.Red : Color.Black)
+            .backgroundColor('#f5f5f5')
+        }
+        .width("75%")
+        .scrollable(ScrollDirection.Horizontal) // 启用横向滚动[6](@ref)
+        .edgeEffect(EdgeEffect.Spring) // 正确设置边界回弹效果[6,7](@ref)
       }
       .margin({top:10})
     }

@@ -320,22 +320,6 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     return this.tape.get(this.headPosition) || this.blank;
   }
 
-  // 生成状态哈希（含纸带、读写头、当前状态）生成图灵机当前运行状态的唯一哈希值
-  private _generateStateHash(): string {
-    // 添加空值断言
-    if (!this.currentState) {
-      throw new Error(TuringError[1001]); // 抛出"无初始状态"错误
-    }
-
-    const tapeStr = Array.from(this.tape)
-      .sort((a, b) => a[0] - b[0])
-      .map(entry => `${entry[0]}:${entry[1]}`)
-      .join('|');
-
-    // 使用非空断言操作符(!)
-    return `${this.currentState!.uuid}-${this.headPosition}-${tapeStr}`;
-  }
-
   /** 执行单步计算 */
   public step(): boolean {
 
@@ -368,9 +352,13 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
       console.log(`从 ${t.from} 读 ${t.readSymbol} → 到 ${t.to} 写 ${t.writeSymbol} 方向 ${t.moveDirection}`);
     });
     // 确定型检查：必须恰好一个转移
-    if (validTransitions.length !== 1) {
+    if (validTransitions.length == 0) {
+      console.log('当前状态无转移函数');
+      throw new Error(TuringError.MissingTransition);
+    }
+    if (validTransitions.length != 1) {
       console.log('不符合转移函数确定性要求，图灵机终止');
-      throw new Error(TuringError[2002]);
+      throw new Error(TuringError.NonDeterministicConflict);
     }
 
     const transition = validTransitions[0];
@@ -394,7 +382,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
       case 'S': // 不动
         break;
       default:  // 处理其他方向（如不移动或无效输入）
-        throw new Error(`${TuringError[2003]} `);
+        throw new Error(TuringError.InvalidMoveDirection);
     }
     const newState = Array.from(this.states).find(s => s.uuid === transition.to);
     this.currentState = newState || null;
