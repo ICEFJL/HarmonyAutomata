@@ -1,6 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { DFA, NFA, FSA, simulateFSA } from 'shared'
-import { AutomatonCreator } from '../main/ets/test/AutomatonCreator'
+import { DFA, NFA, FSA, simulateFSA, AutomatonCreator} from 'shared'
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../main/ets/test/TestAutomaton';
 import { nfaToDFATestFSA_RES, minimizedNormalFSA, minDFATestFSA_RES } from '../main/ets/test/TestResultAutomaton';
 function areSetsEqual(set1: Set<number>, set2: Set<number>): boolean {

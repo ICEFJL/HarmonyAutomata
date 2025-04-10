@@ -53,3 +53,5 @@ export { NFA } from './src/main/ets/automaton/fsa/function/NFA'
 export { FSA } from './src/main/ets/automaton/fsa/function/FSA'
 
 export { DFA } from './src/main/ets/automaton/fsa/function/DFA'
+
+export { FSAConfig, AutomatonCreator } from './src/main/ets/automaton/fsa/test/AutomatonCreator'

@@ -18,6 +18,7 @@ export class AutomatonCreator {
         let savedFile = new SavedFile(fsa.name, '测试文件', fsa.type);
         savedFile.save();
     }
+
     public static createFromDFA(dfa: FSAConfig): FSAAutomaton {
         const automaton = new FSAAutomaton();
         const stateMap = new Map<string, State>(); // 状态名称到State对象的映射

@@ -3,7 +3,7 @@ import {
   AutomatonType,
   ConfirmWindow,
   Const, DrawCanvas, DrawInvoker, FSAAutomaton, GemLayoutAlgorithm,
-  HelpUtil,
+  AutomatonCreator,
   SavedFile,
   SaveFileWindow,
   simulateFSA, DFA, NFA,
@@ -11,7 +11,6 @@ import {
   State, Transition} from 'shared';
 import { ResultWindow } from '../view/ResultWindow';
 import { funcAbilityWant } from '../finiteautomatonability/FiniteAutomatonAbility';
-import { AutomatonCreator } from '../test/AutomatonCreator';
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../test/TestAutomaton';
 
 @Entry

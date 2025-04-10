@@ -1,4 +1,4 @@
-import { FSAConfig } from './AutomatonCreator';
+import { FSAConfig } from 'shared';
 
 export const nfaToDFATestFSA_RES: FSAConfig = {
   name: "nfaToDFATestFSA_RES", 

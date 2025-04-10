@@ -1,4 +1,4 @@
-import { FSAConfig } from './AutomatonCreator';
+import { FSAConfig } from 'shared';
 
 export const easyFSA: FSAConfig = {
   name: "easyFSA", 
