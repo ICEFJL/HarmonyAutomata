@@ -151,7 +151,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       }
       this.currentState = this.getStateWithUuid(transition.to);
       // 3. 递归尝试后续路径
-      if (this.run()) {
+      if (this.recursiveRun()) {
         return true;
       }
       // 4. 回溯状态
@@ -166,6 +166,9 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
 
     // 使用栈来存储需要探索的状态
     const stateStack: History[] = [];
+    // 创建一个集合来记录路径级别访问过的状态和栈组合，防止同一路径重复尝试
+    const visitedStates = new Set<string>();
+    let temp = 1;
 
     // 开始探索
     while (true) {
@@ -182,6 +185,9 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       const currentInput = this.getCurrentSymbol();
       const stackTop = this.currentStack[this.currentStack.length - 1] ?? 'ε';
 
+      // 生成一个唯一的标识符，用于记录当前状态、输入索引和栈的组合
+      let stateKey = `${this.currentState?.uuid}-${this.inputIndex}-${this.currentStack.join('-')}-1`;
+
       // 获取所有可能的转移
       const transitions = this.getTransitions().filter(t =>
       t.from === this.currentState!.uuid &&
@@ -192,8 +198,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       // 如果没有可用的转移，回溯到上一个状态
       if (transitions.length === 0) {
         if (stateStack.length === 0) {
-          // 没有更多状态可以回溯，拒绝输入
-          return false;
+          return false; // 没有更多状态可以回溯，拒绝输入
         }
 
         // 回溯到上一个状态
@@ -204,29 +209,74 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
         continue;
       }
 
-      // 取出第一个转移进行尝试，其余转移保存到栈中以备后续回溯
-      const currentTransition = transitions[0];
+      // 如果这个状态、输入位置和栈的组合已经访问过，跳过这个路径
+      if (visitedStates.has(stateKey)) {
+        // 尝试下一个转移
+        while(visitedStates.has(stateKey)){
+          stateKey = `${this.currentState?.uuid}-${this.inputIndex}-${this.currentStack.join('-')}-${++temp}`;
+        }
+        if(transitions.length < temp){
+          //回到了起始状态且遍历了所以路径
+          if(this.isInitialState(this.currentState as S)){
+            return false;
+          }
+          // 回溯到上一个状态
+          const lastState = stateStack.pop()!;
+          this.currentState = lastState.currentState as S;
+          this.inputIndex = lastState.inputIndex;
+          this.currentStack = lastState.currentStack;
+          continue;
+        }
+        let currentTransition = transitions[temp - 1];
+        temp = 1;
+        if (currentTransition) {
+          // 将当前路径的状态添加到栈中
+          stateStack.push({
+            currentState: this.currentState,
+            inputIndex: this.inputIndex,
+            currentStack: [...this.currentStack]
+          });
 
-      // 对于其余转移，保存当前状态到栈中
-      for (let i = 1; i < transitions.length; i++) {
+          // 执行当前转移
+          if (currentTransition.readSymbol !== 'ε') {
+            this.inputIndex++;
+          }
+          if (currentTransition.popSymbol !== 'ε') {
+            this.popStack();
+          }
+          if (currentTransition.pushSymbol !== 'ε') {
+            this.pushStack(currentTransition.pushSymbol);
+          }
+          this.currentState = this.getStateWithUuid(currentTransition.to);
+
+          // 记录当前路径
+          visitedStates.add(stateKey);
+        }
+      } else {
+        // 如果没有访问过，直接记录并进行转移
+        visitedStates.add(stateKey);
+
+        // 保存当前状态和栈，准备回溯
         stateStack.push({
           currentState: this.currentState,
           inputIndex: this.inputIndex,
           currentStack: [...this.currentStack]
         });
-      }
 
-      // 执行当前转移
-      if (currentTransition.readSymbol !== 'ε') {
-        this.inputIndex++;
+        // 执行当前转移
+        const currentTransition = transitions[0];
+
+        if (currentTransition.readSymbol !== 'ε') {
+          this.inputIndex++;
+        }
+        if (currentTransition.popSymbol !== 'ε') {
+          this.popStack();
+        }
+        if (currentTransition.pushSymbol !== 'ε') {
+          this.pushStack(currentTransition.pushSymbol);
+        }
+        this.currentState = this.getStateWithUuid(currentTransition.to);
       }
-      if (currentTransition.popSymbol !== 'ε') {
-        this.popStack();
-      }
-      if (currentTransition.pushSymbol !== 'ε') {
-        this.pushStack(currentTransition.pushSymbol);
-      }
-      this.currentState = this.getStateWithUuid(currentTransition.to);
     }
   }
 
@@ -614,13 +664,13 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
     // 创建带唯一UUID的状态
     const q0 = new State();
     q0.setName("q0");
-    q0.setPosition(0, 0);
+    q0.setPosition(150, 250);
     const q1 = new State();
     q1.setName("q1");
-    q1.setPosition(100, 0);
+    q1.setPosition(250, 250);
     const q2 = new State();
-    q1.setName("q2");
-    q1.setPosition(100, 100);
+    q2.setName("q2");
+    q2.setPosition(150, 350);
 
     pda.addStates([q0, q1, q2]);
     pda.setInitialState(q0);//初始状态

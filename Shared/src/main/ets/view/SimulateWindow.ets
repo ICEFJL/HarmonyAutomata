@@ -17,7 +17,7 @@ export struct SimulateWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(5)
+            .maxLength(50)
         }
         .margin(15)
 

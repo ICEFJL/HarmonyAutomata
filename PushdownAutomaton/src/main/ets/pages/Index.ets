@@ -124,6 +124,7 @@ struct PDAComponent {
     }
   }
   simulate(input: string): void{
+    this.pda = PDAAutomaton.getAutomaton(this.drawInvoker);
     this.pda.initializeInput(input);
     const result = this.pda.run();
     if(result){
@@ -145,6 +146,12 @@ struct PDAComponent {
             return;
           }
           this.saveFileWindow.open();
+        })
+      MenuItem({ content: '创建实例' })
+        .onClick(() => {
+          this.pda = PDAAutomaton.createExample();
+          this.pda.drawPDAAutomaton(this.drawInvoker);
+          this.endUpdate();
         })
       MenuItem({ content: '仿真验证' })
         .onClick(() => {
