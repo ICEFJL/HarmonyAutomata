@@ -63,11 +63,8 @@ export class DrawTransition extends IDraw {
       }
     }
     this.y -= labelOffset;
-    //此处label最小长度改为5
     let str = this.label.length === 0 ? Const.EMPTY_STRING : this.label;
-    if(this.label.length > 5){
-      str = this.label.length.toString()
-    }
+
     context.fillText(str, this.x, this.y);
     let res = context.measureText(str);
     this.labelWidth = res.width / 2;

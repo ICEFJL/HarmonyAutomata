@@ -16,7 +16,7 @@ export struct Save{
       case AutomatonType.DFA:
         return FunctionUrl.FA
       default:
-       return FunctionUrl.FA
+        return FunctionUrl.FA
     }
   }
 
@@ -29,7 +29,7 @@ export struct Save{
       case AutomatonType.DFA:
         return 'Index'
       default:
-       return 'Index'
+        return 'Index'
     }
   }
 
@@ -81,26 +81,31 @@ export struct Save{
                     .textAlign(TextAlign.Start)
                     .fontSize(18)
                     .layoutWeight(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
                   Text(item.fileType)
                     .textAlign(TextAlign.End)
                     .fontSize(18)
                 }
+                .layoutWeight(1)
                 Row() {
                   Text(item.note)
                     .textAlign(TextAlign.Start)
                     .fontSize(18)
                     .fontColor(Color.Gray)
-                    .layoutWeight(1)
+                    .layoutWeight(10)
+                    .maxLines(2)          // 限制最多显示2行
+                    .textOverflow({ overflow: TextOverflow.Ellipsis }) // 超出部分显示...
                   Text(item.getSaveTimeStr())
                     .textAlign(TextAlign.End)
                     .fontColor(Color.Gray)
                     .fontSize(18)
+                    .layoutWeight(6)
                 }
               }
-              .layoutWeight(1)
+              .layoutWeight(2)
               .margin(5)
             }
-            .height(70)
+            .height(75)
             .backgroundColor(Color.White)
             .onClick(() => {
               this.startAbility(this.getAbility(item.fileType),this.getRouter(item.fileType), item)

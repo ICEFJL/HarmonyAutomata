@@ -24,7 +24,7 @@ export struct PDATransitionDetailWindow {
     if(this.mTransition.label.length>1 && !this.firstCreate){
       this.readSymbol = this.mTransition.label[0];
       this.popSymbol = this.mTransition.label[2];
-      this.labelName = this.mTransition.label[4];
+      this.labelName = this.mTransition.label.slice(4);
     } else{
       this.labelName = this.mTransition.label;
     }
@@ -69,7 +69,7 @@ export struct PDATransitionDetailWindow {
             .fontSize(20)
             .margin({right: 10})
             .width('50%')
-            .maxLength(1)
+            .maxLength(10)
         }
         .margin({top: 5})
 
