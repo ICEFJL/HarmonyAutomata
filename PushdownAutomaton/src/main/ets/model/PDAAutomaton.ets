@@ -217,7 +217,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
         }
         if(transitions.length < temp){
           //回到了起始状态且遍历了所以路径
-          if(this.isInitialState(this.currentState as S)){
+          if(this.isInitialState(this.currentState as S) && this.currentStack.length === 1){
             return false;
           }
           // 回溯到上一个状态
@@ -225,6 +225,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
           this.currentState = lastState.currentState as S;
           this.inputIndex = lastState.inputIndex;
           this.currentStack = lastState.currentStack;
+          temp=1;
           continue;
         }
         let currentTransition = transitions[temp - 1];
