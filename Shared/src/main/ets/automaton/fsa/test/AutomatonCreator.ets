@@ -1,7 +1,8 @@
 import { FSAAutomaton, GemLayoutAlgorithm, SavedFile, State, Transition } from 'shared';
 
 export interface FSAConfig {
-    name: string;
+    name?: string;
+    note?: string;
     states: string[];          // 状态列表
     alphabet: string[];        // 输入符号集合
     transitions: Record<string, Record<string, string[]>>; // 状态转移表

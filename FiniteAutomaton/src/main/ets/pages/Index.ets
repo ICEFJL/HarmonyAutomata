@@ -2,13 +2,15 @@ import { ToastUtil } from '@pura/harmony-utils';
 import {
   AutomatonType,
   ConfirmWindow,
-  Const, DrawCanvas, DrawInvoker, FSAAutomaton, GemLayoutAlgorithm,
+  Const, DrawCanvas, DrawInvoker, FSAAutomaton, GemLayoutAlgorithm,GemLayoutTest,
   AutomatonCreator,
   SavedFile,
   SaveFileWindow,
   simulateFSA, DFA, NFA,
   SimulateWindow,
-  State, Transition} from 'shared';
+  State, Transition,
+  DFATest,
+  NFAToDFATest} from 'shared';
 import { ResultWindow } from '../view/ResultWindow';
 import { funcAbilityWant } from '../finiteautomatonability/FiniteAutomatonAbility';
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../test/TestAutomaton';
@@ -206,6 +208,7 @@ struct FSAComponent {
           AutomatonCreator.save(normalFSA);
           AutomatonCreator.save(nfaToDFATestFSA);
           AutomatonCreator.save(minDFATestFSA);
+          AutomatonCreator.save(NFAToDFATest.nfa[1]);
           ToastUtil.showToast('创建成功');
         })
     }

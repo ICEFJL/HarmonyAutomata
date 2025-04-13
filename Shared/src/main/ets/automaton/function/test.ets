@@ -4,7 +4,7 @@ import { Automaton } from "../Automaton";
 import { globalContext } from "../../components/DrawCanvas";
 import { HelpUtil } from "../../common/HelpUtil";
 import { Const } from "../../../../../Index";
-export class GemLayoutAlgorithm<S extends State, T extends Transition> {
+export class GemLayoutTest<S extends State, T extends Transition> {
   process(graph: Automaton<S, T>): Automaton<S, T> {
     const vArray = graph.getStates(); // 直接使用所有状态（无需移除初始状态）
     const n = vArray.length;

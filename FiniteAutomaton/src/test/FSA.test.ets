@@ -1,5 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { DFA, NFA, FSA, simulateFSA, AutomatonCreator} from 'shared'
+import { DFA, NFA, FSA, simulateFSA, AutomatonCreator, NFAToDFATest} from 'shared'
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../main/ets/test/TestAutomaton';
 import { nfaToDFATestFSA_RES, minimizedNormalFSA, minDFATestFSA_RES } from '../main/ets/test/TestResultAutomaton';
 function areSetsEqual(set1: Set<number>, set2: Set<number>): boolean {
@@ -19,6 +19,16 @@ export default function FSATest() {
     it('assertEqual', 0, () => {
       let a = NFA.toDFA(AutomatonCreator.createFromDFA(nfaToDFATestFSA));
       let b = AutomatonCreator.createFromDFA(nfaToDFATestFSA_RES);
+      expect(FSA.isEqual(a, b)).assertEqual(true);
+    })
+    it('assertEqual2', 0, () => {
+      let a = NFA.toDFA(AutomatonCreator.createFromDFA(NFAToDFATest.nfa[0]));
+      let b = AutomatonCreator.createFromDFA(NFAToDFATest.dfa[0]);
+      expect(FSA.isEqual(a, b)).assertEqual(true);
+    })
+    it('assertEqual3', 0, () => {
+      let a = NFA.toDFA(AutomatonCreator.createFromDFA(NFAToDFATest.nfa[1]));
+      let b = AutomatonCreator.createFromDFA(NFAToDFATest.dfa[1]);
       expect(FSA.isEqual(a, b)).assertEqual(true);
     })
   })

@@ -55,3 +55,11 @@ export { FSA } from './src/main/ets/automaton/fsa/function/FSA'
 export { DFA } from './src/main/ets/automaton/fsa/function/DFA'
 
 export { FSAConfig, AutomatonCreator } from './src/main/ets/automaton/fsa/test/AutomatonCreator'
+
+export { DFATest } from './src/main/ets/automaton/fsa/test/DFATest'
+
+export { GemLayoutTest } from './src/main/ets/automaton/function/test'
+
+export { NFAToDFATest } from './src/main/ets/automaton/fsa/test/NFAToDFATest'
+
+export { NFATest } from './src/main/ets/automaton/fsa/test/NFATest'
