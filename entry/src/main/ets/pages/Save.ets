@@ -64,6 +64,29 @@ export struct Save{
       })
   }
 
+  @Builder
+  export(index: number) {
+    Text('导出')
+      .fontSize(20) // 设置字体大小
+      .fontColor(Color.White) // 设置字体颜色为白色
+      .textAlign(TextAlign.Center) // 设置文本居中对齐
+      .backgroundColor(Color.Blue) // 设置背景颜色为红色
+      .height(70)
+      .width(70)
+      .onClick(() => {
+        const name = this.savedFileList[index].fileName;
+        SavedFile.export(name);
+      })
+  }
+
+  @Builder
+  buildActionButtons(index: number) {
+    Row() {
+      this.export(index)   // 导出按钮
+      this.delete(index)   // 删除按钮
+    }
+    .layoutWeight(3) // 控制按钮区域宽度
+  }
 
   build() {
     NavDestination() {
@@ -111,7 +134,7 @@ export struct Save{
               this.startAbility(this.getAbility(item.fileType),this.getRouter(item.fileType), item)
             })
           }
-          .swipeAction({end: this.delete(index)})
+          .swipeAction({end: this.buildActionButtons(index)})
         })
       }
       .padding(20)

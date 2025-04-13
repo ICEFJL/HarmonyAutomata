@@ -1,9 +1,11 @@
 import { AutomatonType } from "../automaton/Type";
 import relationalStore from '@ohos.data.relationalStore';
 import { Database } from "./Database";
-import { FileUtil } from "@pura/harmony-utils";
+import { FileUtil, ToastUtil } from "@pura/harmony-utils";
 import { fileIo as fs, ReadTextOptions } from '@kit.CoreFileKit';
 import { Const, HelpUtil } from "../../../../Index";
+import { BusinessError } from '@kit.BasicServicesKit';
+import { Environment } from '@kit.CoreFileKit';
 
 export class SavedFile {
   fileName: string;
@@ -65,6 +67,45 @@ export class SavedFile {
     Database.deleteByFileName(fileName);
     SavedFile.deleteFile("",fileName + Const.FILE_POSTFIX);
     HelpUtil.deletePicture(fileName);
+  }
+
+  static export(fileName: string = ""){
+    let filePath = FileUtil.getFilesDirPath("", fileName + Const.FILE_POSTFIX, false);
+    let isExisted = FileUtil.access(filePath);
+    if(!isExisted){
+      console.log('文件不存在：',filePath);
+    }
+    else{
+      console.log('找到文件：',filePath);
+    }
+
+    // 检查是否具有 READ_WRITE_DOWNLOAD_DIRECTORY 权限，无权限则需要向用户申请授予权限。
+    try {
+      const downloadPath = Environment.getUserDownloadDir();
+      const targetFolderPath = `${downloadPath}/Automaton`;
+      const targetFilePath = `${targetFolderPath}/${fileName + Const.FILE_POSTFIX}`;
+      // 确保目标文件夹存在，如果不存在则创建它
+      if (!FileUtil.accessSync(targetFolderPath)) {
+        FileUtil.mkdirSync(targetFolderPath);  // 创建文件夹
+        console.log(`创建文件夹：${targetFolderPath}`);
+      }
+      if (FileUtil.accessSync(targetFilePath)) {
+        // 删除文件
+        fs.unlinkSync(targetFilePath);  // 删除文件
+        console.log(`文件已成功删除：${targetFilePath}`);
+      } else {
+        console.log(`文件不存在：${targetFilePath}`);
+      }
+
+      // 复制文件
+      fs.copyFileSync(filePath, targetFilePath);  // 复制源文件到目标路径
+
+      console.log(`文件已成功导出到：${targetFilePath}`);
+    } catch (error) {
+      const err: BusinessError = error as BusinessError;
+      console.error(`Error code: ${err.code}, message: ${err.message}`);
+    }
+    ToastUtil.showToast('导出成功');
   }
 
   static deleteFile(dirPath: string = "", fileName: string = ""): void{
