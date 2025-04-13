@@ -217,7 +217,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
         }
         if(transitions.length < temp){
           //回到了起始状态且遍历了所以路径
-          if(this.isInitialState(this.currentState as S)){
+          if(this.isInitialState(this.currentState as S) && this.currentStack.length === 1){
             return false;
           }
           // 回溯到上一个状态
@@ -225,6 +225,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
           this.currentState = lastState.currentState as S;
           this.inputIndex = lastState.inputIndex;
           this.currentStack = lastState.currentStack;
+          temp=1;
           continue;
         }
         let currentTransition = transitions[temp - 1];
@@ -245,7 +246,9 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
             this.popStack();
           }
           if (currentTransition.pushSymbol !== 'ε') {
-            this.pushStack(currentTransition.pushSymbol);
+            for(let i = currentTransition.pushSymbol.length - 1; i >= 0; i--){
+              this.pushStack(currentTransition.pushSymbol[i]);
+            }
           }
           this.currentState = this.getStateWithUuid(currentTransition.to);
 
@@ -273,7 +276,9 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
           this.popStack();
         }
         if (currentTransition.pushSymbol !== 'ε') {
-          this.pushStack(currentTransition.pushSymbol);
+          for(let i = currentTransition.pushSymbol.length - 1; i >= 0; i--){
+            this.pushStack(currentTransition.pushSymbol[i]);
+          }
         }
         this.currentState = this.getStateWithUuid(currentTransition.to);
       }
@@ -397,7 +402,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
   }
 
 
-//----------------------------------------------------------------------
+  //----------------------------------------------------------------------
 
   public addStates(states: S[]): void {
     for (const state of states) {
@@ -548,7 +553,7 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
     });
     draw.transitionMap.forEach((transitions) => {
       transitions.forEach((transition) => {
-        pda.addTransition(new PDATransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],transition.label[4]));
+        pda.addTransition(new PDATransition(transition.fromState.uuid, transition.toState.uuid, transition.label[0],transition.label[2],transition.label.slice(4)));
       })
     });
     pda.initializeAlphabet();

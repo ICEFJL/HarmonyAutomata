@@ -145,6 +145,12 @@ struct PDAComponent {
             ToastUtil.showToast('缺乏初始状态，无法执行');
             return;
           }
+          if(!Array.from(this.drawInvoker.stateMap.values()).some(
+            item => item[item.length - 1].state.isFinal === true
+          )){
+            ToastUtil.showToast('缺乏接受状态，无法执行');
+            return;
+          }
           this.saveFileWindow.open();
         })
       MenuItem({ content: '创建实例' })
@@ -157,6 +163,12 @@ struct PDAComponent {
         .onClick(() => {
           if(!this.drawInvoker.initialState){
             ToastUtil.showToast('缺乏初始状态，无法执行');
+            return;
+          }
+          if(!Array.from(this.drawInvoker.stateMap.values()).some(
+            item => item[item.length - 1].state.isFinal === true
+          )){
+            ToastUtil.showToast('缺乏接受状态，无法执行');
             return;
           }
           this.simulateWindow.open();
