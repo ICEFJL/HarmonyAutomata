@@ -8,9 +8,9 @@ import {
   SaveFileWindow,
   SimulateWindow,
   State, Transition} from 'shared';
-import { PDAAutomaton } from '../model/PDAAutomaton';
-import { PDAGemLayoutAlgorithm } from '../model/PDAGemLayoutAlgorithm';
-import { PDATransition } from '../model/PDATransition';
+import { PDAAutomaton } from 'shared/src/main/ets/automaton/pda/PDAAutomaton';
+import { PDAGemLayoutAlgorithm } from 'shared/src/main/ets/automaton/pda/PDAGemLayoutAlgorithm';
+import { PDATransition } from 'shared/src/main/ets/automaton/pda/PDATransition';
 import { funcAbilityWant } from '../pushdownautomatonability/PushdownAutomatonAbility';
 import { ResultWindow } from '../view/ResultWindow';
 

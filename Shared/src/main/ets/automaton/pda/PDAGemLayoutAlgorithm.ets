@@ -1,7 +1,7 @@
 import {Transition,State,HelpUtil,Const } from 'shared'
 import {globalContext } from 'shared/src/main/ets/components/DrawCanvas'
-import {PDATransition} from '../model/PDATransition'
-import {PDAAutomaton} from '../model/PDAAutomaton'
+import {PDATransition} from './PDATransition'
+import {PDAAutomaton} from './PDAAutomaton'
 
 export class PDAGemLayoutAlgorithm<S extends State, T extends PDATransition> {
   process(graph: PDAAutomaton<S, T>): PDAAutomaton<S, T> {

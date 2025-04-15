@@ -63,3 +63,9 @@ export { GemLayoutTest } from './src/main/ets/automaton/function/test'
 export { NFAToDFATest } from './src/main/ets/automaton/fsa/test/NFAToDFATest'
 
 export { NFATest } from './src/main/ets/automaton/fsa/test/NFATest'
+
+export { PDAAutomaton } from './src/main/ets/automaton/pda/PDAAutomaton'
+
+export { PDAGemLayoutAlgorithm } from './src/main/ets/automaton/pda/PDAGemLayoutAlgorithm'
+
+export { PDATransition } from './src/main/ets/automaton/pda/PDATransition'

@@ -101,6 +101,7 @@ export struct FileListWindow {
                 .width(70)
                 .onClick(() => {
                   const content=fs.readTextSync(`${this.targetFolderPath}/${this.fileNameList[index]}`);
+                  SavedFile.delete(JSON.parse(content).name);
                   SavedFile.saveToFile(content, "", JSON.parse(content).name + Const.FILE_POSTFIX);
                   this.saveFile = new SavedFile(JSON.parse(content).name, JSON.parse(content).note, JSON.parse(content).type);
                   this.saveFile.save();
