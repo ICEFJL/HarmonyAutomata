@@ -286,10 +286,10 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
   }
 
 
-  public checkPDAEquivalence(automaton: PDAAutomaton<State, PDATransition>): boolean {
+  public checkPDAEquivalence(pda2: PDAAutomaton<State, PDATransition>): boolean {
     // 1. 检查字母表是否等价
     const thisAlphabet = this.getAlphabet();
-    const otherAlphabet = automaton.getAlphabet();
+    const otherAlphabet = pda2.getAlphabet();
 
     console.log("当前自动机字母表:", thisAlphabet);
     console.log("对比自动机字母表:", otherAlphabet);
@@ -318,8 +318,55 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       const thisResult = this.run();
 
       // 重置并初始化另一个自动机
-      automaton.initializeInput(testCase);
-      const otherResult = automaton.run();
+      pda2.initializeInput(testCase);
+      const otherResult = pda2.run();
+
+      // 如果结果不同，则不等价
+      if (thisResult !== otherResult) {
+        console.log(`测试用例 "${testCase}" 结果不同：${thisResult} vs ${otherResult}`);
+        return false;
+      }
+    }
+
+    // 4. 如果所有测试都通过，则认为两个自动机是等价的
+    console.log("所有测试用例都通过，自动机等价");
+    return true;
+  }
+
+  public static isEqual(pda1: PDAAutomaton<State, PDATransition>, pda2: PDAAutomaton<State, PDATransition>): boolean {
+    // 1. 检查字母表是否等价
+    const thisAlphabet = pda1.getAlphabet();
+    const otherAlphabet = pda2.getAlphabet();
+
+    console.log("当前自动机字母表:", thisAlphabet);
+    console.log("对比自动机字母表:", otherAlphabet);
+
+    // 检查字母表长度
+    if (thisAlphabet.size !== otherAlphabet.size) {
+      console.log("字母表长度不同，不等价");
+      return false;
+    }
+
+    // 检查字母表内容
+    for (const item of thisAlphabet) {
+      if (!otherAlphabet.has(item)) {
+        return false;
+      }
+    }
+
+    // 2. 生成测试用例
+    const testCases = pda1.generateTestCases(Array.from(pda1.alphabet));
+    console.log("生成的测试用例:", testCases);
+
+    // 3. 对每个测试用例，检查两个自动机是否给出相同的接受/拒绝结果
+    for (const testCase of testCases) {
+      // 重置并初始化当前自动机
+      pda1.initializeInput(testCase);
+      const thisResult = pda1.run();
+
+      // 重置并初始化另一个自动机
+      pda2.initializeInput(testCase);
+      const otherResult = pda2.run();
 
       // 如果结果不同，则不等价
       if (thisResult !== otherResult) {
