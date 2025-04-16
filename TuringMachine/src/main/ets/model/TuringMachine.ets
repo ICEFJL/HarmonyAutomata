@@ -72,12 +72,19 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
       maxPos = this.headPosition;
     }
 
-    // 构建可视化字符串
+    // 构建可视化字符串（状态名嵌入磁头位置，保留符号）
     let tapeStr = "";
     for (let pos = minPos; pos <= maxPos; pos++) {
       const symbol = this.tape.get(pos) || this.blank;
-      // 高亮读写头位置
-      tapeStr += (pos === this.headPosition) ? `[${symbol}]` : symbol;
+
+      if (pos === this.headPosition) {
+        // 磁头位置显示状态名和符号
+        const stateName = this.currentState?.name || "";
+        tapeStr += `[${stateName}]`; // 状态名用方括号标记
+        tapeStr += symbol; // 符号紧跟状态名显示
+      } else {
+        tapeStr += symbol;
+      }
     }
 
     this.currentTape = tapeStr;

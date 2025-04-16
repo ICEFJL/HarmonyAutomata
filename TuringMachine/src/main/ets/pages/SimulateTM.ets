@@ -38,8 +38,8 @@ struct SimulateTM {
 
   onPageShow() {
     const data: string = this.params['data'];
-    //this.tm = BaseTuringMachine.deserialize(data);
-    this.tm = this.tm.createExample();
+    this.tm = BaseTuringMachine.deserialize(data);
+    //this.tm = this.tm.createExample();
     this.showStates = this.tm.showStates();
     this.showInitialState = this.tm.showInitialState();
     this.showFinalStates = this.tm.showFinalStates();
@@ -221,7 +221,7 @@ struct SimulateTM {
           .margin({left: 10})
         Scroll() {
           TextInput({
-            text: this.result.error ? this.result.error : this.result.finalTape,
+            text: this.result.error ? "拒绝 " + this.result.error : "接受 " + this.result.finalTape,
           })
             .width(`${this.textWidth}px`)// 动态绑定宽度
             .onChange((value: string) => {

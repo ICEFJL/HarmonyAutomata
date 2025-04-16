@@ -170,6 +170,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
   public saveToFile(dirPath: string = ""): void {
     try {
       let jsonStr = this.serialize();
+      console.log("json文件内容：" + jsonStr);
       SavedFile.saveToFile(jsonStr, dirPath, this.name + Const.FILE_POSTFIX);
     } catch (err) {
       let error = err as BusinessError;
@@ -237,19 +238,15 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
 
   //去除字符串尾部连续ε和[]
   public getFinalTape(str: string): string {
-    //先去除[]
-    // 转换为字符数组并过滤
-    const charArray = Array.from(str);
-    const filtered1= charArray.filter(c => c !== '[');
-    const filtered2= filtered1.filter(c => c !== ']');
-    // 重新组合为字符串
-    str=filtered2.join('');
+    // 删除所有 [...] 块（包括括号）
+    // 使用正则表达式匹配非贪婪模式的 [...] 内容
+    str = str.replace(/\[.*?\]/g, '');
+
+    // 去除尾部连续 ε
     let end = str.length - 1;
-    // 从末尾向前遍历，找到第一个非空字符位置
     while (end >= 0 && str.charAt(end) === 'ε') {
       end--;
     }
-    // 截取子字符串
     return str.substring(0, end + 1);
   }
 
