@@ -14,6 +14,8 @@ import {
 import { ResultWindow } from '../view/ResultWindow';
 import { funcAbilityWant } from '../finiteautomatonability/FiniteAutomatonAbility';
 import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../test/TestAutomaton';
+import { GraphvizInput } from '../view/GraphvizInput';
+import { GraphvizExample } from '../view/GraphvizExample';
 
 @Entry
 @Component
@@ -28,7 +30,7 @@ struct FSAComponent {
   @Provide saveFile: SavedFile | null = null;
   @Provide label: string = "";
   @Provide title: string = "";
-  fsa = new FSAAutomaton();
+  @Provide fsa: FSAAutomaton = new FSAAutomaton();
   private gemLayoutAlgorithm = new GemLayoutAlgorithm<State, Transition>();
   private saveFileWindow: CustomDialogController = new CustomDialogController({
     builder: SaveFileWindow({ save: () => this.save() }), // 弹框的构造器
@@ -64,6 +66,31 @@ struct FSAComponent {
     autoCancel: true,               // 允许点击蒙层关闭弹窗
     customStyle: true               // 使用自定义样式
   });
+
+  private graphvizInput: CustomDialogController = new CustomDialogController({
+    builder: GraphvizInput({ openExample: () => this.openExample(), import: () => {
+      this.fsa = this.gemLayoutAlgorithm.process(this.fsa) as FSAAutomaton;
+      this.clearAll();
+    } }), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  private graphvizExample: CustomDialogController = new CustomDialogController({
+    builder: GraphvizExample(), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  openExample(): void{
+    this.graphvizExample.open();
+  }
 
   aboutToAppear() {
     if(funcAbilityWant?.parameters?.file){
@@ -199,6 +226,13 @@ struct FSAComponent {
           if(this.fsa.update){
             this.endUpdate();
           }
+        })
+      MenuItem({
+        content: '导入Graphviz文件'
+      })
+        .onClick(() => {
+          this.title = '导入Graphviz文件';
+          this.graphvizInput.open();
         })
       MenuItem({
         content: '创建测试文件'
