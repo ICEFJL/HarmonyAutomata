@@ -1,7 +1,6 @@
 import { Transition } from 'shared'
 
 export class TuringTransition extends Transition {
-  //▇▇▇ 新增图灵机特有属性 ▇▇▇
   readonly readSymbol: string;   // 当前扫描符号（如 '0', '1'）
   readonly writeSymbol: string;  // 要写入的符号
   readonly moveDirection: 'L' | 'R'| 'S'; // 读写头移动方向

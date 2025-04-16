@@ -153,8 +153,8 @@ struct SimulateTM {
         Text("进行的读写操作 "+`${this.stepLog.transition}`)
           .margin({ top: 10, left: 10 })
           .fontSize(20)
-        Text(this.ifFinal ? "最终读写头位置 " + `${this.stepLog.head + 1}` :
-          "当前读写头位置 " + `${this.stepLog.head + 1}`)
+        Text(this.ifFinal ? "最终读写头位置 " + `${this.stepLog.head}` :
+          "当前读写头位置 " + `${this.stepLog.head}`)
           .margin({ top: 10, left: 10 })
           .fontSize(20)
         Text(this.ifFinal ? "最终纸带 " + this.stepLog.tape : "当前纸带 " + this.stepLog.tape)

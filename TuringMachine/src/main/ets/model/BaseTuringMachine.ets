@@ -244,7 +244,7 @@ export class BaseTuringMachine extends TuringMachine<State, TuringTransition> {
 
     // 去除尾部连续 ε
     let end = str.length - 1;
-    while (end >= 0 && str.charAt(end) === 'ε') {
+    while (end >= 0 && str.charAt(end) === Const.EMPTY_STRING) {
       end--;
     }
     return str.substring(0, end + 1);
