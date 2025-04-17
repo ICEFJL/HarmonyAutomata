@@ -1,4 +1,5 @@
 import { FSAAutomaton, State, Transition  } from "shared";
+import { ToastUtil } from '@pura/harmony-utils';
 
 @CustomDialog
 @Component
@@ -25,11 +26,20 @@ export struct GraphvizInput {
 
   parseGraphvizInput(input: string): FSAAutomaton {
     this.automaton = new FSAAutomaton();
-    const lines = input.split('\n');
     this.statesMap = new Map<string, State>();
     let initialStates: string[] = [];
 
-    // 定义正则表达式（需要根据实际需求调整）
+    // 新增：提取digraph块内容
+    const digraphRegex = RegExp(/\s*digraph\s+\S*\s*\{\s*([\s\S]*?)\s*\}/);
+    const match = input.match(digraphRegex);
+    if (!match) {
+      ToastUtil.showToast("未找到有效的digraph块");
+      return this.automaton;
+    }
+    const content = match[1];
+    const lines = content.split('\n');
+
+    // 定义正则表达式
     const IS_INIT_EX = RegExp(/\s*q -> (q\d*)/);
     const IS_FINAL_EX = RegExp(/\s*(q\d*) \[shape=doublecircle\]/);
     const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\];)/);
@@ -59,10 +69,8 @@ export struct GraphvizInput {
         const fromName = transMatch[1];
         const toName = transMatch[2];
         const label = transMatch[4] || "";
-
         const fromState = this.ensureStateExists(fromName);
         const toState = this.ensureStateExists(toName);
-
         const transition = new Transition(fromState.uuid, toState.uuid, label);
         this.automaton.addTransition(transition);
       }
@@ -78,6 +86,7 @@ export struct GraphvizInput {
 
     return this.automaton;
   }
+
 
   build() {
     Stack() {
