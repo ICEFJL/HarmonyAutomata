@@ -12,6 +12,8 @@ import { PDAAutomaton } from 'shared/src/main/ets/automaton/pda/PDAAutomaton';
 import { PDAGemLayoutAlgorithm } from 'shared/src/main/ets/automaton/pda/PDAGemLayoutAlgorithm';
 import { PDATransition } from 'shared/src/main/ets/automaton/pda/PDATransition';
 import { funcAbilityWant } from '../pushdownautomatonability/PushdownAutomatonAbility';
+import { GraphvizExample } from '../view/GraphvizExample';
+import { GraphvizInput } from '../view/GraphvizInput';
 import { ResultWindow } from '../view/ResultWindow';
 
 
@@ -30,7 +32,7 @@ struct PDAComponent {
   @Provide saveFile: SavedFile | null = null;
   @Provide label: string = "";
   @Provide title: string = "";
-  pda = new PDAAutomaton();
+  @Provide pda: PDAAutomaton<State, PDATransition> = new PDAAutomaton();
   private gemLayoutAlgorithm = new PDAGemLayoutAlgorithm();
   private saveFileWindow: CustomDialogController = new CustomDialogController({
     builder: SaveFileWindow({ save: () => this.save() }), // 弹框的构造器
@@ -68,6 +70,31 @@ struct PDAComponent {
     customStyle: true               // 使用自定义样式
   });
 
+  private graphvizInput: CustomDialogController = new CustomDialogController({
+    builder: GraphvizInput({ openExample: () => this.openExample(), import: () => {
+      this.pda = this.gemLayoutAlgorithm.process(this.pda) as PDAAutomaton<State, PDATransition>;
+      this.clearAll();
+    } }), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  private graphvizExample: CustomDialogController = new CustomDialogController({
+    builder: GraphvizExample(), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel")         // 点击蒙层的回调
+    },
+    autoCancel: true,               // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  openExample(): void{
+    this.graphvizExample.open();
+  }
+
   aboutToAppear() {
     if(funcAbilityWant?.parameters?.file){
       let fileName = funcAbilityWant?.parameters?.fileName as string;
@@ -84,6 +111,7 @@ struct PDAComponent {
 
   clearAll(){
     this.drawInvoker.clearAll();
+    this.endUpdate();
     this.unDoDraw = false;
     this.redoDraw = false;
   }
@@ -158,6 +186,13 @@ struct PDAComponent {
           this.pda = PDAAutomaton.createExample();
           this.pda.drawPDAAutomaton(this.drawInvoker);
           this.endUpdate();
+        })
+      MenuItem({
+        content: '导入Graphviz文件'
+      })
+        .onClick(() => {
+          this.title = '导入Graphviz文件';
+          this.graphvizInput.open();
         })
       MenuItem({ content: '仿真验证' })
         .onClick(() => {
