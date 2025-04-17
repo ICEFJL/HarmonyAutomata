@@ -1,9 +1,12 @@
-import { Const, DrawCanvas, DrawInvoker, AutomatonType,SaveFileWindow,SavedFile, ConfirmWindow} from 'shared';
+import { Const, DrawCanvas, DrawInvoker, AutomatonType, SaveFileWindow, SavedFile, ConfirmWindow, State } from 'shared';
 import {BaseTuringMachine} from '../model/BaseTuringMachine'
 import { ToastUtil } from '@pura/harmony-utils';
 import { funcAbilityWant } from '../turingmachineability/TuringMachineAbility';
 import router from '@ohos.router';
-
+import { TuringGemLayoutAlgorithm } from '../model/GemLayoutAlgorithm'
+import { TuringTransition } from '../model/TuringTransition'
+import { GraphvizInput } from '../view/GraphvizInput'
+import { GraphvizExample } from '../view/GraphvizExample'
 @Entry
 @Component
 struct TMComponent {
@@ -17,7 +20,33 @@ struct TMComponent {
   @Provide saveFile: SavedFile | null = null;
   @Provide label: string = "";
   @Provide title: string = "";
-  tm:BaseTuringMachine=new BaseTuringMachine();
+  private gemLayoutAlgorithm = new TuringGemLayoutAlgorithm();
+  @Provide tm: BaseTuringMachine = new BaseTuringMachine();
+  private graphvizInput: CustomDialogController = new CustomDialogController({
+    builder: GraphvizInput({
+      openExample: () => this.openExample(), import: () => {
+        this.tm = this.gemLayoutAlgorithm.process(this.tm) as BaseTuringMachine;
+        this.clearAll();
+      }
+    }), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel") // 点击蒙层的回调
+    },
+    autoCancel: true, // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+  private graphvizExample: CustomDialogController = new CustomDialogController({
+    builder: GraphvizExample(), // 弹框的构造器
+    cancel: () => {
+      console.log("cancel") // 点击蒙层的回调
+    },
+    autoCancel: true, // 允许点击蒙层关闭弹窗
+    customStyle: true               // 使用自定义样式
+  });
+
+  openExample(): void {
+    this.graphvizExample.open();
+  }
 
   private saveFileWindow: CustomDialogController = new CustomDialogController({
     builder: SaveFileWindow({ save: () => this.save() }), // 弹框的构造器
@@ -39,6 +68,7 @@ struct TMComponent {
 
   private clearAll(){
     this.drawInvoker.clearAll();
+    this.endUpdate();
     this.unDoDraw = false;
     this.redoDraw = false;
   }
@@ -120,6 +150,23 @@ struct TMComponent {
           this.title = '删除文件';
           this.label = '确定删除该文件吗？';
           this.confirmWindow.open();
+        })
+      MenuItem({
+        content: '导入Graphviz文件'
+      })
+        .onClick(() => {
+          this.title = '导入Graphviz文件';
+          this.graphvizInput.open();
+        })
+      MenuItem({
+        content: '自动布局',
+      })
+        .onClick(() => {
+          this.tm = BaseTuringMachine.getTuringMachine(this.drawInvoker);
+          this.tm = this.gemLayoutAlgorithm.process(this.tm) as BaseTuringMachine;
+          if (this.tm.update) {
+            this.endUpdate();
+          }
         })
     }
   }
