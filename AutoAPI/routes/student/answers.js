@@ -22,6 +22,28 @@ router.post('/', async function (req, res, next) {
         failure(res, error);
     }
 })
+/**
+ * 获取answers表的score
+ * GET /student/answers/:excerciseId
+ */
+router.get('/:excerciseId', async function (req, res, next) {
+    try {
+        const condition = {
+            excercise_id: req.params.excerciseId,
+            student_id: req.userId
+        }
+        const answer = await Answer.findOne({
+            where: condition
+        });
+        if (answer) {
+            success(res, '获取答案成功。', {answer});
+        } else {
+            throw new NotFoundError('答案不存在。');
+        }
+    }catch (error) {
+        failure(res, error);
+    }
+})
 
 /**
  * 公共方法：白名单过滤
