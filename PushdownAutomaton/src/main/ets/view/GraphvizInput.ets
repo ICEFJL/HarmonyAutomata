@@ -29,13 +29,14 @@ export struct GraphvizInput {
     this.statesMap = new Map<string, State>();
     let initialStates: string[] = [];
 
-    // 定义正则表达式（需要根据实际需求调整）
-    const IS_INIT_EX = RegExp(/\s*q -> (q\d*)/);
-    const IS_FINAL_EX = RegExp(/\s*(q\d*) \[shape=doublecircle\]/);
-    const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\];)/);
+    // 定义表达式（需要根据实际需求调整）
+    const IS_INIT_EX = RegExp(/\s*q->(q\d*)/);
+    const IS_FINAL_EX = RegExp(/\s*(q\d*)\[shape=doublecircle\]/);
+    const TRANS_EX = RegExp(/\s*(q\d*)->(q\d*)(\[label="(.*)"\];)/);
 
     lines.forEach(line => {
       line = line.trim();
+      line = line.replace(/\s+/g, '');  // 去掉所有空白字符
       if (!line || line.startsWith("//")) return;
 
       // 处理初始状态
@@ -59,11 +60,12 @@ export struct GraphvizInput {
         const fromName = transMatch[1];
         const toName = transMatch[2];
         const label = transMatch[4] || "";
+        const cleanedLabel = label.replace(/\s+/g, '');  // 去掉所有空格
 
         const fromState = this.ensureStateExists(fromName);
         const toState = this.ensureStateExists(toName);
 
-        const transition = new PDATransition(fromState.uuid, toState.uuid, label[0],label[2],label.slice(4));
+        const transition = new PDATransition(fromState.uuid, toState.uuid, cleanedLabel[0],cleanedLabel[2],cleanedLabel.slice(4));
         this.automaton.addTransition(transition);
       }
     });

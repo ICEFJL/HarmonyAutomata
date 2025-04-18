@@ -175,9 +175,10 @@ export class PDAAutomaton<S extends State, T extends PDATransition> {
       // 检查是否达到接受状态
       if (
         this.inputIndex >= this.input.length &&
-          this.currentState?.isFinal &&
-          this.currentStack.length === 1 &&
-          this.currentStack[0] === 'Z'
+          this.currentState?.isFinal &&(
+          (this.currentStack.length === 1 && this.currentStack[0] === 'Z') ||
+          this.currentStack.length === 0
+        )
       ) {
         return true;
       }
