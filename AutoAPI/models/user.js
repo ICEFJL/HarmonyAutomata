@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   });
   User.associate = (models) => {
     User.hasMany(models.Answer, {foreignKey: 'student_id'});
-    User.hasMany(models.TeacherAndStudent, {foreignKey: 'teacher_id'})
+    User.hasMany(models.TeacherAndStudent, {foreignKey: 'teacher_id'});
+    User.hasMany(models.Excercise, {foreignKey: 'publisher'});
   };
   User.init({
     uname: {
