@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   Answer.associate = (models) => {
     Answer.belongsTo(models.User,{foreignKey: 'student_id'})
+    Answer.belongsTo(models.Excercise, {foreignKey: 'excercise_id'})
   };
   Answer.init({
     answer: {
