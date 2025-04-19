@@ -40,12 +40,13 @@ export struct GraphvizInput {
     const lines = content.split('\n');
 
     // 定义正则表达式
-    const IS_INIT_EX = RegExp(/\s*q -> (q\d*)/);
-    const IS_FINAL_EX = RegExp(/\s*(q\d*) \[shape=doublecircle\]/);
-    const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\];)/);
+    const IS_INIT_EX = RegExp(/\s*q->(q\d*)/);
+    const IS_FINAL_EX = RegExp(/\s*(q\d*)\[shape=doublecircle\]/);
+    const TRANS_EX = RegExp(/\s*(q\d*)->(q\d*)(\[label="(.*)"\];)/);
 
     lines.forEach(line => {
       line = line.trim();
+      line = line.replace(/\s+/g, '');  // 去掉所有空白字符
       if (!line || line.startsWith("//")) return;
 
       // 处理初始状态
