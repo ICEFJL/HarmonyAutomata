@@ -6,6 +6,7 @@ const { success, failure } = require('../../utils/responses');
 const { BadRequestError, NotFoundError } = require('../../utils/errors');
 const bcrypt = require('bcryptjs');
 const {Op} = require("sequelize");
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 
 /**
  * 查询当前登录用户详情
@@ -64,10 +65,17 @@ router.get('/students', async (req, res) => {
         const pageSize = Math.abs(Number(query.pageSize)) || 2;
         //计算offset
         const offset = (currentPage - 1) * pageSize;
-        //查询所有学生的id
+
+        //定义带有[教师id][当前页码]和[每页条数]的cacheKey作为缓存的键
+        const cacheKey = `students:${req.userId}:${currentPage}:${pageSize}`;
+        //读取缓存中的数据
+        let data = await getKey(cacheKey);
+        if(data) {
+            return success(res, '查询学生列表成功。', data)
+        }
+
         const students = await getStudents(req);
-        //根据students中的所有id，在users表中查询用户信息
-        const studentsInfo = await User.findAll({
+        const {count,rows} = await User.findAndCountAll({
             limit: pageSize,
             offset: offset,
             where: {
@@ -75,7 +83,16 @@ router.get('/students', async (req, res) => {
             },
             attributes: { exclude: ['upassword'] }
         });
-        success(res, '查询名下所有学生成功。', { studentsInfo });
+        data = {
+            students:rows,
+            pagination: {
+                total: count,
+                currentPage,
+                pageSize
+            }
+        }
+        await setKey(cacheKey, data);
+        success(res, '查询名下所有学生成功。', rows);
     } catch (error) {
         failure(res, error);
     }
@@ -110,6 +127,7 @@ router.post('/ts', async (req, res) => {
                 student_id: studentId
             });
         }
+        await delKey();
         success(res, '添加老师学生关系成功。',{ teacherAndStudent },201)
     } catch (error) {
         failure(res, error);
@@ -141,9 +159,19 @@ async function getStudents(req) {
     let condition = {
         where: {
             teacher_id: teacherId
-        }
+        },
+        attributes: ['student_id']
     }
     const students = await TeacherAndStudent.findAll(condition);
     return students;
+}
+/**
+ * 清除缓存
+ */
+async function clearCache(id = null) {
+    const keys = await getKeysByPattern(`students:${req.userId}:*`);
+    if(keys.length !== 0) {
+        await delKey(keys);
+    }
 }
 module.exports = router;
