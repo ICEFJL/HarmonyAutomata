@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     uname: DataTypes.STRING,
     upassword: DataTypes.STRING,
-    role: DataTypes.STRING
+    role: DataTypes.STRING,
+    email: DataTypes.STRING
   });
   User.associate = (models) => {
     User.hasMany(models.Answer, {foreignKey: 'student_id'});
