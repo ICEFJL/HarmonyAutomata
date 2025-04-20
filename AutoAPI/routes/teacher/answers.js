@@ -4,7 +4,7 @@ const { Answer,User,Excercise,TeacherAndStudent } = require('../../models');
 const { success, failure } = require('../../utils/responses');
 const { BadRequestError, NotFoundError } = require('../../utils/errors');
 const bcrypt = require('bcryptjs');
-
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 /**
  * 查看对应题目的学生的答题情况
  * @route GET /teacher/answers/:exerciseId

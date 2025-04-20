@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Excercise,TeacherAndStudent } = require('../../models');
+const { Excercise,TeacherAndStudent,Answer,User } = require('../../models');
 const { success, failure } = require('../../utils/responses');
 const { BadRequestError, NotFoundError } = require('../../utils/errors');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
-
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 /**
  * 查询各个类型的习题列表
  * GET Excercises listing.
@@ -19,6 +19,15 @@ router.get('/', async function (req, res, next) {
         const pageSize = Math.abs(Number(query.pageSize)) || 2;
         //计算offset
         const offset = (currentPage - 1) * pageSize;
+
+        //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
+        const cacheKey = `excercises:${currentPage}:${pageSize}:${req.query.excerciseType}`;
+        //读取缓存中的数据
+        let data = await getKey(cacheKey);
+        if(data) {
+            return success(res, `查询 ${req.query.excerciseType} 习题列表成功。`, data)
+        }
+
         const condition = {
             limit: pageSize,
             offset: offset
@@ -42,12 +51,23 @@ router.get('/', async function (req, res, next) {
             type: req.query.excerciseType
         }
         const {count, rows} = await Excercise.findAndCountAll(condition);
+
+        data = {
+            excercises:rows,
+            pagination: {
+                total: count,
+                currentPage,
+                pageSize
+            }
+        }
+        await setKey(cacheKey, data);
+
         //success(res, '查询习题列表成功。', {teachers});
         success(res, '查询习题列表成功。', {
             excercises: rows.map(excercise => ({
                 id: excercise.id,
                 title: excercise.title,
-                publisher: excercise.publisher,
+                publisher: excercise.publisher
             })),
             pagination: {
                 total: count,
@@ -73,6 +93,15 @@ router.get('/completed', async function (req, res, next) {
         const pageSize = Math.abs(Number(query.pageSize)) || 2;
         //计算offset
         const offset = (currentPage - 1) * pageSize;
+
+        //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
+        const cacheKey = `excercises:${currentPage}:${pageSize}:${req.query.excerciseType}:completed`;
+        //读取缓存中的数据
+        let data = await getKey(cacheKey);
+        if(data) {
+            return success(res, `查询 已完成 习题列表成功。`, data)
+        }
+
         let condition = {};
         //找到answers表中的student_id为req.userId的记录，再查询excercise表中对应id的记录
         const answers = await Answer.findAll({
@@ -98,6 +127,15 @@ router.get('/completed', async function (req, res, next) {
             attributes: ['id', 'title','publisher','createdAt']
         }
         const {count, rows} = await Excercise.findAndCountAll(condition);
+        data = {
+            excercises:rows,
+            pagination: {
+                total: count,
+                currentPage,
+                pageSize
+            }
+        }
+        await setKey(cacheKey, data);
         success(res, '查询已完成的习题列表成功。', {
             excercises: rows.map(excercise => ({
                 id: excercise.id,
@@ -129,6 +167,15 @@ router.get('/uncompleted', async function (req, res, next) {
         const pageSize = Math.abs(Number(query.pageSize)) || 2;
         //计算offset
         const offset = (currentPage - 1) * pageSize;
+
+        //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
+        const cacheKey = `excercises:${currentPage}:${pageSize}:${req.query.excerciseType}:uncompleted`;
+        //读取缓存中的数据
+        let data = await getKey(cacheKey);
+        if(data) {
+            return success(res, `查询 未完成 习题列表成功。`, data)
+        }
+
         const condition = {
             limit: pageSize,
             offset: offset
@@ -166,6 +213,17 @@ router.get('/uncompleted', async function (req, res, next) {
             attributes: ['uname']
         }];
         const {count, rows} = await Excercise.findAndCountAll(condition);
+        //缓存数据
+        data = {
+            excercises:rows,
+            pagination: {
+                total: count,
+                currentPage,
+                pageSize
+            }
+        }
+        await setKey(cacheKey, data);
+
         success(res, '查询未完成的习题列表成功。', {
             excercises: rows.map(excercise => ({
                 id: excercise.id,
@@ -186,15 +244,24 @@ router.get('/uncompleted', async function (req, res, next) {
         failure(res, error);
     }
 })
-
 /**
  * 查询单个习题详情
  * get /student/excercises/:id
  */
 router.get('/:id', async function (req, res, next) {
     try {
-        const excercise = await getExcercise(req);
-        success(res, '查询习题详情成功。', {excercise});
+        const {id} = req.params;
+        let excercise = await getKey(`excercise:${id}`);
+        if(!excercise){
+            excercise = await Excercise.findByPk(id);
+            if (!excercise) {
+                throw new NotFoundError(`ID: ${id}的习题未找到`);
+            }
+            await setKey(`excercise:${id}`, excercise);
+        }
+        success(res, '查询习题详情成功。', excercise);
+        // const excercise = await getExcercise(req);
+        // success(res, '查询习题详情成功。', {excercise});
     } catch (error) {
         failure(res, error);
     }
@@ -215,6 +282,18 @@ async function getExcercise(req) {
     }
     return excercise;
 }
-
+/**
+ * 清除缓存
+ */
+async function clearCache(id = null) {
+    const keys = await getKeysByPattern('excercises:*');
+    if(keys.length !== 0) {
+        await delKey(keys);
+    }
+    if(id) {
+        const keys = await getKeysByPattern(`excercise:${id}`);
+        await delKey(keys);
+    }
+}
 
 module.exports = router;
