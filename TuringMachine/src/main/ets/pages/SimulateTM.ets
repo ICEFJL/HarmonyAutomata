@@ -39,7 +39,6 @@ struct SimulateTM {
   onPageShow() {
     const data: string = this.params['data'];
     this.tm = BaseTuringMachine.deserialize(data);
-    //this.tm = this.tm.createExample();
     this.showStates = this.tm.showStates();
     this.showInitialState = this.tm.showInitialState();
     this.showFinalStates = this.tm.showFinalStates();
@@ -86,6 +85,7 @@ struct SimulateTM {
         .margin({top:10})
       Column() {
         Text("状态集 " + `${this.showStates}`)
+          .maxLines(1)
           .fontSize(20)
           .margin({ top: 10, left: 10 })
         Text("初始状态 " + `${this.showInitialState}`)
@@ -93,15 +93,18 @@ struct SimulateTM {
           .margin({ top: 10, left: 10 })
         Text("终止状态集 " + `${this.showFinalStates}`)
           .fontSize(20)
+          .maxLines(1)
           .margin({ top: 10, left: 10 })
         Text("带符号表 " + `${this.showSymbols}`)
           .fontSize(20)
+          .maxLines(1)
           .margin({ top: 10, left: 10 })
         Text("空白符 " + `${this.showBlankSymbol}`)
           .fontSize(20)
           .margin({ top: 10, left: 10 })
         Text("输入字母表 " + `${this.showEnterSymbols}`)
           .fontSize(20)
+          .maxLines(1)
           .margin({ top: 10, left: 10 })
         Row() {
           Text("移动函数 ")

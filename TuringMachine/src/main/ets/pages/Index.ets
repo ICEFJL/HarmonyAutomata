@@ -26,6 +26,7 @@ struct TMComponent {
     builder: GraphvizInput({
       openExample: () => this.openExample(), import: () => {
         this.tm = this.gemLayoutAlgorithm.process(this.tm) as BaseTuringMachine;
+        ToastUtil.showToast('导入成功');
         this.clearAll();
       }
     }), // 弹框的构造器
@@ -157,16 +158,6 @@ struct TMComponent {
         .onClick(() => {
           this.title = '导入Graphviz文件';
           this.graphvizInput.open();
-        })
-      MenuItem({
-        content: '自动布局',
-      })
-        .onClick(() => {
-          this.tm = BaseTuringMachine.getTuringMachine(this.drawInvoker);
-          this.tm = this.gemLayoutAlgorithm.process(this.tm) as BaseTuringMachine;
-          if (this.tm.update) {
-            this.endUpdate();
-          }
         })
     }
   }

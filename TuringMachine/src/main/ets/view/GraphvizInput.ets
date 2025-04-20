@@ -29,7 +29,7 @@ export struct GraphvizInput {
     // 定义正则表达式来匹配初始状态、终态和转移规则
     const IS_INIT_EX = RegExp(/\s*q -> (q\d*)/);
     const IS_FINAL_EX = RegExp(/\s*(q\d*) \[shape=doublecircle\]/);
-    const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\];)/);
+    const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\])/);
 
     // 遍历每一行
     lines.forEach(line => {
@@ -42,6 +42,7 @@ export struct GraphvizInput {
       // 处理初始状态
       const initMatch = line.match(IS_INIT_EX);
       if (initMatch) {
+        console.log("初始状态" + initMatch[1]);
         initialStates.push(initMatch[1]);
         return;
       }
@@ -49,6 +50,7 @@ export struct GraphvizInput {
       // 处理终态
       const finalMatch = line.match(IS_FINAL_EX);
       if (finalMatch) {
+        console.log("最终状态" + finalMatch[1]);
         const name = finalMatch[1];
         // 确保状态存在，如果不存在则创建
         this.ensureStateExists(name).isFinal = true;
@@ -61,7 +63,6 @@ export struct GraphvizInput {
         const fromName = transMatch[1];
         const toName = transMatch[2];
         const label = transMatch[4] || "";
-        console.log(fromName + "->" + toName + ':' + label);
         const fromState = this.ensureStateExists(fromName);
         const toState = this.ensureStateExists(toName);
         if (label[4] != 'R' && label[4] != 'S' && label[4] != 'L') {
@@ -131,8 +132,6 @@ export struct GraphvizInput {
             .fontColor("#317ef5")
             .onClick(() => {
               this.tm = this.parseGraphvizInput(this.info);
-              console.log(this.tm.showInitialState());
-              console.log(this.tm.showStates());
               this.import();
               this.controller.close(); // 关闭弹窗
             })

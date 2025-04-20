@@ -263,7 +263,7 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
     if (!fromExists || !toExists) {
       throw new Error(`无效转移规则：状态 ${transition.from} → ${transition.to} 不存在`);
     }
-
+    console.log(transition.label);
     this.transitions.add(transition);
   }
 

@@ -10,9 +10,9 @@ export struct GraphvizExample {
     '    q -> q0\n' +
     '    \n' +
     '    // 状态转移定义\n' +
-    '    q0 -> q0 [label= "0,1;R"];\n' +
-    '    q0 -> q0 [label= "1,0;R"];\n' +
-    '    q0 -> q1 [label= "ε,ε;S"];\n' +
+    '    q0 -> q0 [label= "0,1;R"]\n' +
+    '    q0 -> q0 [label= "1,0;R"]\n' +
+    '    q0 -> q1 [label= "ε,ε;S"]\n' +
     '    \n' +
     '    // 初始状态标记点\n' +
     '    q [shape=point]\n' +
@@ -21,19 +21,20 @@ export struct GraphvizExample {
     '    q1 [shape=doublecircle]\n' +
     '}\n' +
     '格式规范\n' +
-    '1.状态命名：\n' +
-    '   状态必须以 q 开头，后跟数字，如 q0, q1, q2 等\n' +
-    '2.初始状态：\n' +
+    '1.点状态：\n' +
+    '   文件中必须包含 q [shape=point] 语句，用于绘制初始状态的指针\n' +
+    '2.状态命名：\n' +
+    '   除了点状态之外的所有状态必须以q+数字的形式命名，如 q0, q1, q2 等\n' +
+    '3.初始状态：\n' +
     '   使用 q -> q状态名 格式定义，例如 q -> q0 表示 q0 是初始状态\n' +
-    '3.终止状态：\n' +
+    '4.终止状态：\n' +
     '   使用 q状态名 [shape=doublecircle] 格式定义终止状态\n' +
-    '4.转移关系：\n' +
-    '   基本格式：q起始状态 -> q目标状态 [label= "readSymbol,writeSymbol;moveDirection"];\n' +
+    '5.转移关系：\n' +
+    '   基本格式：q起始状态 -> q目标状态 [label= "readSymbol,writeSymbol;moveDirection"]\n' +
+    '   "label="后面有一个空格\n' +
     '   移动方向：仅限R,S,L三种情况\n' +
     '   读写符号：为空时，用ε表示\n' +
-    '   例如：q0 -> q1 [label= "0,1;R"];\n' +
-    '5.点状态：\n' +
-    '   文件中必须包含 q [shape=point] 语句，用于绘制初始状态的指针';
+    '   例如：q0 -> q1 [label= "0,1;R"]';
   exmp: string = '基本结构\n' +
     'digraph 图名 {\n' +
     '    // 初始状态定义\n' +
