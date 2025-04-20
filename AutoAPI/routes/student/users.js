@@ -1,10 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
-const { User } = require('../../models');
+const { User, Excercise} = require('../../models');
 const { success, failure } = require('../../utils/responses');
 const { BadRequestError, NotFoundError } = require('../../utils/errors');
 const bcrypt = require('bcryptjs');
-
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 
 /**
  * 查询当前登录用户详情
@@ -12,8 +13,17 @@ const bcrypt = require('bcryptjs');
  */
 router.get('/me', async (req, res) => {
   try {
-      const user = await getUser(req);
-      success(res, '查询用户详情成功。', {user})
+      let user = await getKey(`user:${req.userId}`);
+      if(!user){
+          user = await Excercise.findByPk(req.userId);
+          if (!user) {
+              throw new NotFoundError(`ID: ${req.userId}的用户未找到`);
+          }
+          await setKey(`user:${req.userId}`, user);
+      }
+      success(res, '查询习题详情成功。', user);
+      // const user = await getUser(req);
+      // success(res, '查询用户详情成功。', {user})
   }catch (error) {
     failure(res, error);
   }
@@ -45,6 +55,7 @@ router.put('/account', async (req, res) => {
         }
         await user.update(body);
         delete user.dataValues.upassword;
+        await clearCache();
         success(res, '修改信息成功。', { user });
     } catch (error) {
       failure(res, error);
@@ -68,6 +79,14 @@ async function getUser(req,showPassword=false) {
   }
   return user;
 }
-
+/**
+ * 清除缓存
+ */
+async function clearCache() {
+    const keys = await getKeysByPattern(`user:${req.userId}:*`);
+    if(keys) {
+        await delKey(keys);
+    }
+}
 module.exports = router;
 
