@@ -6,9 +6,10 @@ const { BadRequestError, NotFoundError,UnauthorizedError } = require('../../util
 const { success, failure } = require('../../utils/responses');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 /**
  * 用户登陆
- * post /admin/auth/sign_in
+ * post /teacher/auth/sign_in
  */
 router.post('/sign_in', async (req, res, next) => {
     try{
@@ -22,14 +23,14 @@ router.post('/sign_in', async (req, res, next) => {
         const condition = {
             where:{
                 [Op.or]: [
-                    {id:login}
+                    {email:login}
                 ]
             }
         }
         //通过id查询用户是否存在
         const user = await User.findOne(condition);
         if(!user){
-            throw new NotFoundError(`ID: ${login}的用户未找到`);
+            throw new NotFoundError(`email: ${login}的用户未找到`);
         }
         //验证密码
         const isPasswordValid = bcrypt.compareSync(upassword, user.upassword);
