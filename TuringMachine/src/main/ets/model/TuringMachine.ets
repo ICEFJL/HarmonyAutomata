@@ -373,7 +373,12 @@ export abstract class TuringMachine<S extends State, T extends TuringTransition>
 
     // 执行转移操作
     // 写入逻辑
-    this.tape.set(this.headPosition, transition.writeSymbol);
+    if (transition.writeSymbol !== this.blank) {
+      this.tape.set(this.headPosition, transition.writeSymbol);
+    } else {
+      // 写入空白符号时删除存储项（恢复默认）
+      this.tape.delete(this.headPosition);
+    }
     switch (transition.moveDirection) {
       case 'L': // 左移逻辑
         this.headPosition -= 1;
