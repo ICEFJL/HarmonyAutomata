@@ -26,15 +26,14 @@ export struct GraphvizInput {
     // 存储初始状态的名称
     let initialStates: string[] = [];
 
-    // 定义正则表达式来匹配初始状态、终态和转移规则
-    const IS_INIT_EX = RegExp(/\s*q -> (q\d*)/);
-    const IS_FINAL_EX = RegExp(/\s*(q\d*) \[shape=doublecircle\]/);
-    const TRANS_EX = RegExp(/\s*(q\d*) -> (q\d*)( \[label= "(.*)"\])/);
+    // 定义表达式（需要根据实际需求调整）
+    const IS_INIT_EX = RegExp(/\s*q->(q\d*)/);
+    const IS_FINAL_EX = RegExp(/\s*(q\d*)\[shape=doublecircle\]/);
+    const TRANS_EX = RegExp(/\s*(q\d*)->(q\d*)(\[label="(.*)"\])/);
 
-    // 遍历每一行
     lines.forEach(line => {
       line = line.trim();
-      // 跳过空行和注释
+      line = line.replace(/\s+/g, ''); // 去掉所有空白字符
       if (!line || line.startsWith("//")) {
         return;
       }
