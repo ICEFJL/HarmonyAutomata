@@ -16,17 +16,17 @@ function areSetsEqual(set1: Set<number>, set2: Set<number>): boolean {
 
 export default function FSATest() {
   describe('nfaToDFATest', () => {
-    it('assertEqual', 0, () => {
+    it('convertNFAtoDFA', 0, () => {
       let a = NFA.toDFA(AutomatonCreator.createFromDFA(nfaToDFATestFSA));
       let b = AutomatonCreator.createFromDFA(nfaToDFATestFSA_RES);
       expect(FSA.isEqual(a, b)).assertEqual(true);
     })
-    it('assertEqual2', 0, () => {
+    it('convertFirstSampleNFAtoDFA', 0, () => {
       let a = NFA.toDFA(AutomatonCreator.createFromDFA(NFAToDFATest.nfa[0]));
       let b = AutomatonCreator.createFromDFA(NFAToDFATest.dfa[0]);
       expect(FSA.isEqual(a, b)).assertEqual(true);
     })
-    it('assertEqual3', 0, () => {
+    it('convertSecondSampleNFAtoDFA', 0, () => {
       let a = NFA.toDFA(AutomatonCreator.createFromDFA(NFAToDFATest.nfa[1]));
       let b = AutomatonCreator.createFromDFA(NFAToDFATest.dfa[1]);
       expect(FSA.isEqual(a, b)).assertEqual(true);
@@ -79,12 +79,12 @@ export default function FSATest() {
   });
 
   describe('minDFATest', () => {
-    it('assertEqual', 0, () => {
+    it('minimizeNormalDFA', 0, () => {
       let a = DFA.minimize(AutomatonCreator.createFromDFA(normalFSA))
       let b = AutomatonCreator.createFromDFA(minimizedNormalFSA);
       expect(FSA.isEqual(a, b)).assertEqual(true);
     })
-    it('assertEqual2', 0, () => {
+    it('minimizeSampleDFA', 0, () => {
       let a = DFA.minimize(AutomatonCreator.createFromDFA(minDFATestFSA))
       let b = AutomatonCreator.createFromDFA(minDFATestFSA_RES);
       expect(FSA.isEqual(a, b)).assertEqual(true);
@@ -92,7 +92,7 @@ export default function FSATest() {
   })
 
   describe('takeClosureTest', () => {
-    it('assertEqual', 0, () => {
+    it('testClosure_s0', 0, () => {
       let a = AutomatonCreator.createFromDFA(easyFSA);
       let res: string[] = ['s0', 's1'];
       let resSet: Set<number> = new Set<number>();
@@ -102,7 +102,7 @@ export default function FSATest() {
       let input = NFA.getClosure(a.getStateWithName('s0')!.uuid, a);
       expect(areSetsEqual(resSet, input)).assertTrue();
     })
-    it('testClosure_s0', 0, () => {
+    it('testClosure_s1', 0, () => {
       let a = AutomatonCreator.createFromDFA(nfaToDFATestFSA);
       let res: string[] = ['s0', 's1', 's2', 's4', 's7'];
       let resSet: Set<number> = new Set<number>();

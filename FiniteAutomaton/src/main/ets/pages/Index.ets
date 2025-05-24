@@ -150,9 +150,9 @@ struct FSAComponent {
   simulate(input: string): void{
     const result = simulateFSA(this.fsa, input);
     if(result.accepted){
-      this.label = '该字符串被接受';
+      this.label = '字符串'+input+'被接受';
     }else{
-      this.label = '该字符串被拒绝';
+      this.label = '该字符串'+input+'被拒绝';
     }
     this.title = '结果';
     this.resultWindow.open();
