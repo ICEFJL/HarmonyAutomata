@@ -1,5 +1,13 @@
 {
   "src": [
-    "pages/Index"
+    "pages/Index",
+    "pages/AutomatonToRE",
+    "pages/REToAutomaton",
+    "pages/RegularExpression",
+    "pages/RegexFileList",
+    "test/Test3",
+    "test/Test2",
+    "test/Test1",
+    "test/Test0"
   ]
 }
