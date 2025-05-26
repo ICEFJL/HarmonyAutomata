@@ -1,5 +1,6 @@
 import axios,{AxiosError,AxiosResponse} from '@ohos/axios';
 import { promptAction, router } from '@kit.ArkUI';
+import { preferenceUtil } from '../utils/PreferencesUtil';
 
 //教师端，添加学生
 
@@ -52,8 +53,8 @@ struct AddStudent {
       .height(50)
       .onClick(async () => {
         const params: RequestQuery = {
-          userId: '272'
-          //userId:  preferenceUtil.readData('userId')
+          //userId: '272'
+          userId:  preferenceUtil.readData('userId')
         }
         const body: RequestBody = {
           id: this.studentId
