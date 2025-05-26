@@ -17,7 +17,7 @@ interface ParamsObj {
 @Entry
 @Component
 struct AnswerDetail {
-  @State excerciseId: string = '199';
+  @State excerciseId: string = '';
   @State answerList: AnswerListItemType[] = [];
   @State completedNum: number = 0;
   @State uncompletedNum: number = 0;
@@ -93,9 +93,9 @@ struct AnswerDetail {
     }
 
     async aboutToAppear() {
-      // const param = router.getParams() as ParamsObj;
-      // this.excerciseId = param.excerciseId;
-      //console.log('获取答案列表的id',this.excerciseId)
+      const param = router.getParams() as ParamsObj;
+      this.excerciseId = param.excerciseId;
+      console.log('获取答案列表的id',this.excerciseId)
       await this.loadingAnswers();
     }
 
