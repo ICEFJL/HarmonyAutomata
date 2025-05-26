@@ -1,6 +1,6 @@
 import { promptAction, router } from '@kit.ArkUI';
 import axios,{AxiosError,AxiosResponse} from '@ohos/axios';
-import {generalUserId} from '../general/userId'
+
 import picker from '@ohos.file.picker';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 import { preferenceUtil } from '../utils/PreferencesUtil';
