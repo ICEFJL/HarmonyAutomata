@@ -1,5 +1,16 @@
 {
   "src": [
-    "pages/Index"
+    "pages/main",
+    "pages/addExercise",
+    "pages/addStudent",
+    "pages/AnswerDetail",
+    "pages/ExcerciseDetail",
+    "pages/ExcerciseList",
+    "pages/login",
+    "pages/personal",
+    "pages/register",
+    "pages/result",
+    "pages/TExcerciseDetail",
+    "pages/tmain"
   ]
 }
