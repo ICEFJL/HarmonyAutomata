@@ -1,6 +1,5 @@
 import { promptAction, router } from '@kit.ArkUI';
 import axios,{AxiosError,AxiosResponse} from '@ohos/axios';
-
 import picker from '@ohos.file.picker';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 import { preferenceUtil } from '../utils/PreferencesUtil';
@@ -123,7 +122,7 @@ struct AddExercise {
       // .width('100%')
       // .justifyContent(FlexAlign.Center)
       Row(){
-        //点击事件
+        //点击事件，点击进入作图界面，上传文件
         Text('上传答案')
           .margin({left:5})
       }.width('100%').height(50).justifyContent(FlexAlign.Start)

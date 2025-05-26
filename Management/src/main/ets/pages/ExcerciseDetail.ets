@@ -52,7 +52,7 @@ struct ExcerciseDetail {
   @State egDivider: DividerTmp = new DividerTmp(1, 60, 10, '#ffe9f0f0')
 
   @State isShowSheet: boolean = false;
-  //半模态页面
+  //半模态页面,可修改，点击按钮进入画图流程
   @Builder
   SheetBuilder() {
     Column() {
