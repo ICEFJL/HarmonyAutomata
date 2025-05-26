@@ -2,8 +2,7 @@ import { promptAction, router } from '@kit.ArkUI';
 import axios,{AxiosError,AxiosResponse} from '@ohos/axios';
 import {preferenceUtil} from "../utils/PreferencesUtil";
 import json from '@ohos.util.json';
-import {generalToken} from '../general/token'
-import {generalUserId} from '../general/userId'
+
 
 //定义接口类型
 interface LoginRequest {
