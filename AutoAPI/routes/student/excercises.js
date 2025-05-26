@@ -19,23 +19,24 @@ router.get('/', async function (req, res, next) {
         const pageSize = Math.abs(Number(query.pageSize)) || 2;
         //计算offset
         const offset = (currentPage - 1) * pageSize;
+        const condition = {
+            limit: pageSize,
+            offset: offset
+        };
 
         //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
-        const cacheKey = `excercises:${currentPage}:${pageSize}:${req.query.excerciseType}`;
+        const cacheKey = `excercises:${req.query.excerciseType}:${currentPage}:${pageSize}`;
         //读取缓存中的数据
         let data = await getKey(cacheKey);
         if(data) {
             return success(res, `查询 ${req.query.excerciseType} 习题列表成功。`, data)
         }
 
-        const condition = {
-            limit: pageSize,
-            offset: offset
-        };
         //找到该学生的所有老师
         const teachers = await TeacherAndStudent.findAll({
             where: {
-                student_id: req.userId
+                //student_id: req.userId
+                student_id: req.query.userId
             },
             attributes: ['teacher_id']
         });
@@ -48,16 +49,29 @@ router.get('/', async function (req, res, next) {
             }, {
                 publisher: null
             }],
-            type: req.query.excerciseType
+            type: req.query.excerciseType,
         }
-        const {count, rows} = await Excercise.findAndCountAll(condition);
+        condition.include = [{
+            model: User,
+            as: 'ex',
+            attributes: ['uname']
+        }]
+        const {count, rows} = await Excercise.findAndCountAll(condition,{attributes: ['id', 'title','type','publisher','createdAt']});
 
         data = {
-            excercises:rows,
+            excercises: rows.map(excercise => ({
+            id: excercise.id,
+            title: excercise.title,
+            publisher: excercise.publisher,
+            publisherName: excercise.ex.uname,
+            publishTime: excercise.createdAt,
+            type:excercise.type
+        })),
             pagination: {
                 total: count,
-                currentPage,
-                pageSize
+                currentPage:currentPage,
+                pageSize:pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);
@@ -67,7 +81,10 @@ router.get('/', async function (req, res, next) {
             excercises: rows.map(excercise => ({
                 id: excercise.id,
                 title: excercise.title,
-                publisher: excercise.publisher
+                publisher: excercise.publisher,
+                publisherName: excercise.ex.uname,
+                publishTime: excercise.createdAt,
+                type:excercise.type
             })),
             pagination: {
                 total: count,
@@ -106,7 +123,7 @@ router.get('/completed', async function (req, res, next) {
         //找到answers表中的student_id为req.userId的记录，再查询excercise表中对应id的记录
         const answers = await Answer.findAll({
             where: {
-                student_id: req.userId
+                student_id: req.query.userId
             },
             attributes: ['excercise_id']
         });
@@ -128,11 +145,19 @@ router.get('/completed', async function (req, res, next) {
         }
         const {count, rows} = await Excercise.findAndCountAll(condition);
         data = {
-            excercises:rows,
+            excercises:rows.map(excercise => ({
+                id: excercise.id,
+                title: excercise.title,
+                publisher: excercise.publisher,
+                publisherName: excercise.ex.uname,
+                publishTime: excercise.createdAt,
+                type: req.query.excerciseType
+            })),
             pagination: {
                 total: count,
-                currentPage,
-                pageSize
+                currentPage:currentPage,
+                pageSize:pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);
@@ -141,8 +166,9 @@ router.get('/completed', async function (req, res, next) {
                 id: excercise.id,
                 title: excercise.title,
                 publisher: excercise.publisher,
-                publisher_uname: excercise.ex.uname,
-                excercise_createdAt: excercise.createdAt,
+                publisherName: excercise.ex.uname,
+                publishTime: excercise.createdAt,
+                type: req.query.excerciseType
             })),
             pagination: {
                 total: count,
@@ -183,7 +209,7 @@ router.get('/uncompleted', async function (req, res, next) {
         //查询该学生的所有老师，然后查询所有老师发布的所有习题excercises，查询answers表中该学生的所有记录answers，excercises.id不在answers.excercise_id中，则表示该学生未完成该习题
         const teachers = await TeacherAndStudent.findAll({
             where: {
-                student_id: req.userId
+                student_id: req.query.userId
             },
             attributes: ['teacher_id']
         });
@@ -199,7 +225,7 @@ router.get('/uncompleted', async function (req, res, next) {
         }
         const answers = await Answer.findAll({
             where: {
-                student_id: req.userId
+                student_id: req.query.userId
             },
             attributes: ['excercise_id']
         });
@@ -215,11 +241,19 @@ router.get('/uncompleted', async function (req, res, next) {
         const {count, rows} = await Excercise.findAndCountAll(condition);
         //缓存数据
         data = {
-            excercises:rows,
+            excercises:rows.map(excercise => ({
+                id: excercise.id,
+                title: excercise.title,
+                publisher: excercise.publisher,
+                publisherName: excercise.ex.uname,
+                publishTime: excercise.createdAt,
+                type: req.query.excerciseType
+            })),
             pagination: {
                 total: count,
-                currentPage,
-                pageSize
+                currentPage:currentPage,
+                pageSize:pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);
@@ -229,8 +263,9 @@ router.get('/uncompleted', async function (req, res, next) {
                 id: excercise.id,
                 title: excercise.title,
                 publisher: excercise.publisher,
-                publisher_uname: excercise.ex.uname,
-                excercise_createdAt: excercise.createdAt
+                publisherName: excercise.ex.uname,
+                publishTime: excercise.createdAt,
+                type: req.query.excerciseType
             })),
             pagination: {
                 total: count,
@@ -252,12 +287,40 @@ router.get('/:id', async function (req, res, next) {
     try {
         const {id} = req.params;
         let excercise = await getKey(`excercise:${id}`);
+        let publisherName = ''
         if(!excercise){
             excercise = await Excercise.findByPk(id);
+            publisherName = await User.findOne({
+                where: {
+                    id: excercise.publisher
+                },
+                attributes: ['uname']
+            })
+            excercise = {
+                id: excercise.id,
+                title: excercise.title,
+                content: excercise.content,
+                type: excercise.type,
+                publisher: excercise.publisher,
+                publisherName: publisherName.uname,
+                publishTime: excercise.createdAt,
+                answer: excercise.answer
+            }
             if (!excercise) {
                 throw new NotFoundError(`ID: ${id}的习题未找到`);
             }
-            await setKey(`excercise:${id}`, excercise);
+            await setKey(`excercise:${id}`, {
+                excercise: {
+                    id:   excercise.id,
+                    title: excercise.title,
+                    content: excercise.content,
+                    type: excercise.type,
+                    publisher: excercise.publisher,
+                    publisherName: excercise.publisherName,
+                    publishTime: excercise.publishTime,
+                    answer: excercise.answer
+                }
+            });
         }
         success(res, '查询习题详情成功。', excercise);
         // const excercise = await getExcercise(req);

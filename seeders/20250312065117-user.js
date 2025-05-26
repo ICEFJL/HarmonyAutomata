@@ -4,11 +4,24 @@ const bcrypt = require('bcryptjs');
 module.exports = {
   async up (queryInterface, Sequelize) {
     const users =[];
-    const counts = 10;
+    const counts = 1;
     for (let i = 0; i < counts; i++) {
       const user = {
-        uname:`用户名 ${i}`,
-        upassword: bcrypt.hashSync(`123123`,10),
+        uname:`学生 ${i}`,
+        upassword: bcrypt.hashSync(`student`,10),
+        email:`${i}@student.com`,
+        role:'student',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      users.push(user);
+    }
+    for (let i = 0; i < counts; i++) {
+      const user = {
+        uname:`教师 ${i}`,
+        upassword: bcrypt.hashSync(`teacher`,10),
+        email:`${i}@teacher.com`,
+        role:'teacher',
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -18,6 +31,7 @@ module.exports = {
       uname:`admin`,
       upassword:bcrypt.hashSync(`admin`,10),
       role:'admin',
+      email:'admin@admin.com',
       createdAt: new Date(),
       updatedAt: new Date()
     }

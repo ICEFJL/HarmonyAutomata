@@ -15,7 +15,7 @@ const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../ut
 router.get('/me', async (req, res) => {
     try {
         const user = await getUser(req);
-        success(res, '查询用户详情成功。', {user})
+        success(res, '查询用户详情成功。', user)
     }catch (error) {
         failure(res, error);
     }
@@ -67,7 +67,7 @@ router.get('/students', async (req, res) => {
         const offset = (currentPage - 1) * pageSize;
 
         //定义带有[教师id][当前页码]和[每页条数]的cacheKey作为缓存的键
-        const cacheKey = `students:${req.userId}:${currentPage}:${pageSize}`;
+        const cacheKey = `users:${req.query.userId}:${currentPage}:${pageSize}`;
         //读取缓存中的数据
         let data = await getKey(cacheKey);
         if(data) {
@@ -84,15 +84,31 @@ router.get('/students', async (req, res) => {
             attributes: { exclude: ['upassword'] }
         });
         data = {
-            students:rows,
+            users:rows,
             pagination: {
                 total: count,
-                currentPage,
-                pageSize
+                currentPage: currentPage,
+                pageSize:pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);
-        success(res, '查询名下所有学生成功。', rows);
+        success(res, '查询名下所有学生成功。', {
+            users: rows.map(user => ({
+                id: user.id,
+                uname: user.uname,
+                email: user.email,
+                role: user.role,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            })),
+            pagination: {
+                total: count,
+                currentPage: currentPage,
+                pageSize: pageSize,
+                totalPage: Math.ceil(count / pageSize)
+            }
+        });
     } catch (error) {
         failure(res, error);
     }
@@ -105,16 +121,28 @@ router.get('/students', async (req, res) => {
 router.post('/ts', async (req, res) => {
     try {
         const studentId = req.body.id;
-        const teacherId = req.userId;
-        const student = await User.findByPk(studentId);
+        const teacherId = req.query.userId;
+        let condition = {
+            where: {
+                id: studentId,
+                role: 'student'
+            }
+        }
+        const student = await User.findOne(condition);
         if (!student) {
             throw new NotFoundError(`ID: ${ studentId } 学生不存在。`);
         }
-        const teacher = await User.findByPk(teacherId);
+        condition = {
+            where: {
+                id: teacherId,
+                role: 'teacher'
+            }
+        }
+        const teacher = await User.findOne(condition);
         if (!teacher) {
             throw new NotFoundError(`ID: ${ teacherId } 老师不存在。`);
         }
-        let condition = {
+        condition = {
             where: {
                 teacher_id: teacherId,
                 student_id: studentId
@@ -126,9 +154,11 @@ router.post('/ts', async (req, res) => {
                 teacher_id: teacherId,
                 student_id: studentId
             });
+        } else {
+            throw new BadRequestError(`ID: ${ studentId } 学生已添加老师关系。`);
         }
-        await delKey();
-        success(res, '添加老师学生关系成功。',{ teacherAndStudent },201)
+        await clearCache(req)
+        success(res, '添加老师学生关系成功。',{},201)
     } catch (error) {
         failure(res, error);
     }
@@ -137,7 +167,7 @@ router.post('/ts', async (req, res) => {
  * 公共方法:查询当前用户
  */
 async function getUser(req,showPassword=false) {
-    const id = req.userId;
+    const id = req.query.userId;
     let condition = {};
     if(!showPassword){
         condition = {
@@ -155,7 +185,7 @@ async function getUser(req,showPassword=false) {
  * 公共方法：查询名下学生
  */
 async function getStudents(req) {
-    const teacherId = req.userId;
+    const teacherId = req.query.userId;
     let condition = {
         where: {
             teacher_id: teacherId
@@ -168,8 +198,8 @@ async function getStudents(req) {
 /**
  * 清除缓存
  */
-async function clearCache(id = null) {
-    const keys = await getKeysByPattern(`students:${req.userId}:*`);
+async function clearCache(id = null,req) {
+    const keys = await getKeysByPattern(`users:${req.query.userId}:*`);
     if(keys.length !== 0) {
         await delKey(keys);
     }

@@ -32,20 +32,14 @@ router.get('/', async function (req, res, next) {
             limit: pageSize,
             offset: offset
         };
-        // if (query.title) {
-        //     condition.where = {
-        //         title: {
-        //             [Op.like]: `%${query.title}%`
-        //         }
-        //     }
-        // }
         const {count, rows} = await Answer.findAndCountAll(condition);
         data = {
             excercises:rows,
             pagination: {
                 total: count,
                 currentPage,
-                pageSize
+                pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);

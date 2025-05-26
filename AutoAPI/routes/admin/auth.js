@@ -6,6 +6,7 @@ const { BadRequestError, NotFoundError,UnauthorizedError } = require('../../util
 const { success, failure } = require('../../utils/responses');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../utils/redis');
 /**
  * 管理员登陆
  * post /admin/auth/sign_in
@@ -22,14 +23,15 @@ router.post('/sign_in', async (req, res, next) => {
         const condition = {
             where:{
                 [Op.or]: [
-                    {id:login}
+                    {email:login}
                 ]
             }
         }
         //通过id查询用户是否存在
         const user = await User.findOne(condition);
+
         if(!user){
-            throw new NotFoundError(`ID: ${login}的用户未找到`);
+            throw new NotFoundError(`email: ${login}的用户未找到`);
         }
         //验证密码
         const isPasswordValid = bcrypt.compareSync(upassword, user.upassword);
@@ -40,11 +42,14 @@ router.post('/sign_in', async (req, res, next) => {
         if(user.role !== 'admin'){
             throw new UnauthorizedError('您不是管理员。');
         }
+        const userId = user.id;
         //生成token
         const token = jwt.sign({
             id: user.id
         }, process.env.SECRET, {expiresIn: '30d'});
-        success(res, '登录成功。', {token})
+        //缓存token
+        //await setKey('adminToken', token, 30 * 24 * 60 * 60);
+        success(res, '登录成功。', {userId})
     }catch (error){
         failure(res, error);
     }

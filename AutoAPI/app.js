@@ -39,19 +39,19 @@ app.use(cors());
 app.use('/', indexRouter);
 //学生端路由配置
 app.use('/student/auth', studentAuthRouter);
-app.use('/student/users',student_auth, studentUsersRouter);
-app.use('/student/excercises',student_auth, studentExcercisesRouter);
-app.use('/student/answers',student_auth, studentAnswersRouter);
+app.use('/student/users', studentUsersRouter);
+app.use('/student/excercises',studentExcercisesRouter);
+app.use('/student/answers', studentAnswersRouter);
 //教师端路由配置
 app.use('/teacher/auth', teacherAuthRouter);
-app.use('/teacher/users', teacher_auth,teacherUsersRouter);
-app.use('/teacher/excercises', teacher_auth,teacherExcercisesRouter);
-app.use('/teacher/answers', teacher_auth,teacherAnswersRouter);
+app.use('/teacher/users',teacherUsersRouter);
+app.use('/teacher/excercises',teacherExcercisesRouter);
+app.use('/teacher/answers',teacherAnswersRouter);
 //后台路由配置
 app.use('/admin/auth', adminAuthRouter);
-app.use('/admin/users', admin_auth,adminUsersRouter);
-app.use('/admin/excercises',admin_auth,adminExcercisesRouter);
-app.use('/admin/answers',admin_auth,adminAnswersRouter);
+app.use('/admin/users',adminUsersRouter);
+app.use('/admin/excercises',adminExcercisesRouter);
+app.use('/admin/answers',adminAnswersRouter);
 
 
 module.exports = app;

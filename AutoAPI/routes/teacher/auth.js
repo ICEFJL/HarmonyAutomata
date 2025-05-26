@@ -41,11 +41,12 @@ router.post('/sign_in', async (req, res, next) => {
         if(user.role !== 'teacher'){
             throw new UnauthorizedError('您不是教师。');
         }
+        const userId = user.id;
         //生成token
         const token = jwt.sign({
             id: user.id
         }, process.env.SECRET, {expiresIn: '30d'});
-        success(res, '登录成功。', {token})
+        success(res, '登录成功。', {userId})
     }catch (error){
         failure(res, error);
     }

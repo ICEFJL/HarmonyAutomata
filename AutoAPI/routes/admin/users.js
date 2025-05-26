@@ -48,7 +48,8 @@ router.get('/', async function (req, res, next) {
             pagination: {
                 total: count,
                 currentPage,
-                pageSize
+                pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);

@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const { User, Excercise} = require('../../models');
@@ -13,15 +12,15 @@ const { redisClient,setKey, getKey,delKey, getKeysByPattern} = require('../../ut
  */
 router.get('/me', async (req, res) => {
   try {
-      let user = await getKey(`user:${req.userId}`);
+      let user = await getKey(`user:${req.query.userId}`);
       if(!user){
-          user = await Excercise.findByPk(req.userId);
+          user = await User.findByPk(req.query.userId);
           if (!user) {
-              throw new NotFoundError(`ID: ${req.userId}的用户未找到`);
+              throw new NotFoundError(`ID: ${req.query.userId}的用户未找到`);
           }
-          await setKey(`user:${req.userId}`, user);
+          await setKey(`user:${req.query.userId}`, user);
       }
-      success(res, '查询习题详情成功。', user);
+      success(res, '查询用户详情成功。', user);
       // const user = await getUser(req);
       // success(res, '查询用户详情成功。', {user})
   }catch (error) {
@@ -36,7 +35,6 @@ router.put('/account', async (req, res) => {
     try {
 
         const body = {
-            uname: req.body.uname,
             current_upassword: req.body.current_upassword,
             upassword: req.body.upassword,
             upasswordConfirmation: req.body.upasswordConfirmation
@@ -55,7 +53,7 @@ router.put('/account', async (req, res) => {
         }
         await user.update(body);
         delete user.dataValues.upassword;
-        await clearCache();
+        //await clearCache(req);
         success(res, '修改信息成功。', { user });
     } catch (error) {
       failure(res, error);
@@ -66,7 +64,7 @@ router.put('/account', async (req, res) => {
  * 公共方法:查询当前用户
  */
 async function getUser(req,showPassword=false) {
-  const id = req.userId;
+  const id = req.query.userId;
   let condition = {};
   if(!showPassword){
       condition = {
@@ -82,9 +80,9 @@ async function getUser(req,showPassword=false) {
 /**
  * 清除缓存
  */
-async function clearCache() {
-    const keys = await getKeysByPattern(`user:${req.userId}:*`);
-    if(keys) {
+async function clearCache(req) {
+    const keys = await getKeysByPattern(`user:${req.query.userId}:*`);
+    if(keys!==null) {
         await delKey(keys);
     }
 }

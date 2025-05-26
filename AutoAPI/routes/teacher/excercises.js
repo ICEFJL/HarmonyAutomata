@@ -22,11 +22,11 @@ router.get('/', async function (req, res, next) {
         const offset = (currentPage - 1) * pageSize;
 
         //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
-        const cacheKey = `excercises:${req.userId}:${currentPage}:${pageSize}`;
+        const cacheKey = `excercises:${req.query.userId}:${currentPage}:${pageSize}`;
         //读取缓存中的数据
         let data = await getKey(cacheKey);
         if(data) {
-            return success(res, `查询 ${req.userId} 习题列表成功。`, data)
+            return success(res, `查询 ${req.query.userId} 习题列表成功。`, data)
         }
 
         const condition = {
@@ -34,7 +34,7 @@ router.get('/', async function (req, res, next) {
             offset: offset,
             //限制为publisher为当前用户的id
             where: {
-                publisher: req.userId,
+                publisher: req.query.userId,
                 //type: req.query.excerciseType
             },
             attributes: ['id', 'title','type','createdAt']
@@ -42,11 +42,17 @@ router.get('/', async function (req, res, next) {
         const {count, rows} = await Excercise.findAndCountAll(condition);
         //缓存数据
         data = {
-            excercises:rows,
+            excercises:rows.map(excercise => ({
+                id: excercise.id,
+                title: excercise.title,
+                type: excercise.type,
+                publishTime: excercise.createdAt
+            })),
             pagination: {
                 total: count,
-                currentPage,
-                pageSize
+                currentPage:currentPage,
+                pageSize:pageSize,
+                totalPage: Math.ceil(count / pageSize)
             }
         }
         await setKey(cacheKey, data);
@@ -56,7 +62,7 @@ router.get('/', async function (req, res, next) {
                 id: excercise.id,
                 title: excercise.title,
                 type: excercise.type,
-                createdAt: excercise.createdAt
+                publishTime: excercise.createdAt
             })),
             pagination: {
                 total: count,
@@ -76,7 +82,7 @@ router.get('/', async function (req, res, next) {
 router.get('/:id', async function (req, res, next) {
     try {
         const {id} = req.params;
-        let excercise = await getKey(`excercise:${req.userId}:${id}`);
+        let excercise = await getKey(`excercise:${req.query.userId}:${id}`);
         if(!excercise){
             excercise = await Excercise.findByPk(id);
             if (!excercise) {
@@ -108,9 +114,9 @@ router.delete('/:id', async function (req, res, next) {
 
 /**
  * 发布习题
- * post /teacher/excercises/
+ * post /teacher/excercises/add
  */
-router.post('/', async function (req, res, next) {
+router.post('/add', async function (req, res, next) {
     try {
         const body = filterBody(req);
         const excercise = await Excercise.create(body);
@@ -130,7 +136,7 @@ function filterBody(req) {
         content: req.body.content,
         image_url: req.body.image_url,
         type: req.body.type,
-        publisher: req.userId,
+        publisher: req.body.userId,
         answer: req.body.answer
     }
 }
@@ -143,7 +149,7 @@ async function getExcercise(req) {
     let condition = {
         where: {
             id: id,
-            publisher: req.userId
+            publisher: req.query.userId
         }
     }
     //查询习题

@@ -15,7 +15,7 @@ router.get('/:exerciseId', async (req, res) => {
         const excercise = await Excercise.findOne({
             where: {
                 id: req.params.exerciseId,
-                publisher: req.userId
+                publisher: req.query.userId
             }
         });
         if (!excercise) {
@@ -37,7 +37,7 @@ router.get('/:exerciseId', async (req, res) => {
             const students = await TeacherAndStudent.findAll({
                 attributes: ['student_id'],
                 where: {
-                    teacher_id: req.userId
+                    teacher_id: req.query.userId
                 },
                 include: [
                     {
@@ -54,7 +54,7 @@ router.get('/:exerciseId', async (req, res) => {
                     result.push({
                         answer_id: answer.id,
                         student_id: student.student_id,
-                        uname: answer.uname,
+                        publishName: answer.uname,
                         answer: answer.answer,
                         score: answer.score,
                         createdAt: answer.createdAt
@@ -63,7 +63,7 @@ router.get('/:exerciseId', async (req, res) => {
                     result.push({
                         answer_id: null,
                         student_id: student.student_id,
-                        uname: student.uname,
+                        publishName: student.uname,
                         answer: null,
                         score: null,
                         createdAt: null
@@ -79,53 +79,4 @@ router.get('/:exerciseId', async (req, res) => {
     }
 
 });
-/**
- * 查看对应学生的答题情况
- * @route GET /teacher/answers/:studentId
- */
-// router.get('/:studentId', async (req, res) => {
-//     try {
-//         const answers = await Answer.findAll({
-//             attributes: ['id','excercise_id', 'answer', 'score', 'createdAt'],
-//             where: {
-//                 student_id: req.params.studentId
-//             },
-//             include: [
-//                 {
-//                     model: Excercise,
-//                     attributes: ['title','content','image_url'],
-//                     where: {
-//                         publisher: req.userId
-//                     }
-//                 }
-//             ]
-//         });
-//         //同时也要显示该学生未回答的题目信息
-//         const excercises = await Excercise.findAll({
-//             attributes: ['id','title','content','image_url'],
-//             where: {
-//                 publisher: req.userId,
-//                 id: {
-//                     [Op.notIn]: answers.map(answer => answer.excercise_id)
-//                 }
-//             }
-//         });
-//         answers.push(...excercises.map(excercise => {
-//             return {
-//                 excercise_id: excercise.id,
-//                 answer: null,
-//                 score: null,
-//                 createdAt: null,
-//                 excercise: {
-//                     title: excercise.title,
-//                     content: excercise.content,
-//                     image_url: excercise.image_url
-//                 }
-//             };
-//         }));
-//         success(res, '查询答题情况成功',answers);
-//     } catch (error) {
-//         failure(res, error);
-//     }
-// });
 module.exports = router;

@@ -14,7 +14,7 @@ router.post('/', async function (req, res, next) {
         try {
             const body = filterBody(req);
             const answer = await Answer.create(body);
-            await clearCache(req.userId, body.excercise_id);
+            await clearCache(req.query.studentId, body.excercise_id);
             success(res, '答案提交成功。', {answer});
         } catch (error) {
             failure(res, error);
@@ -31,7 +31,7 @@ router.post('/', async function (req, res, next) {
 router.get('/:excerciseId', async function (req, res, next) {
     try {
         //定义带有[当前页码]和[每页条数]的cacheKey作为缓存的键
-        const cacheKey = `answers:${req.userId}:${req.params.excerciseId}`;
+        const cacheKey = `answers:${req.query.studentId}:${req.params.excerciseId}`;
         //读取缓存中的数据
         let data = await getKey(cacheKey);
         if(data) {
@@ -40,7 +40,7 @@ router.get('/:excerciseId', async function (req, res, next) {
 
         const condition = {
             excercise_id: req.params.excerciseId,
-            student_id: req.userId
+            student_id: req.query.studentId
         }
         const answer = await Answer.findAll({
             where: condition
@@ -66,7 +66,7 @@ function filterBody(req) {
     return {
         answer: req.body.answer,
         excercise_id: req.body.excercise_id,
-        student_id: req.userId
+        student_id: req.query.studentId
     }
 }
 /**
