@@ -355,8 +355,8 @@ struct Tmain {
       const params: AxiosRequestQuery = {
         'currentPage': this.currentPage.toString(),
         'pageSize': this.pageSize.toString(),
-        'userId': '272'
-        //'userId': preferenceUtil.readData('userId')
+        //'userId': '272'
+        'userId': preferenceUtil.readData('userId')
         //'userId': generalUserId.getUserId()
       }
       this.url = 'http://192.168.88.1:3001/teacher/users/students';
@@ -377,8 +377,8 @@ struct Tmain {
       const params: AxiosRequestQuery = {
         'currentPage': this.currentPage.toString(),
         'pageSize': this.pageSize.toString(),
-        'userId': '272'
-        //'userId': preferenceUtil.readData('userId')
+        //'userId': '272'
+        'userId': preferenceUtil.readData('userId')
         //'userId': generalUserId.getUserId()
       }
       this.url = 'http://192.168.88.1:3001/teacher/excercises/';
