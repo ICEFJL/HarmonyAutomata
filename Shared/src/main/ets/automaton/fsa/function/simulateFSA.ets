@@ -5,14 +5,14 @@ import { FSAAutomaton } from '../FSAAutomaton';
 export class FSAState extends State{
   readonly remaining: string = '';
   readonly read: string | null = '';
-  constructor(remaining: string, read: string, parent: State) {
-    super(parent.x, parent.y, parent.name, parent.isFinal, parent.uuid)
+  constructor(remaining: string, read: string, current: State) {
+    super(current.x, current.y, current.name, current.isFinal, current.uuid)
     this.remaining = remaining;
     this.read = read;
   }
 
   key () {
-    return String(this.uuid + this.remaining)
+    return `${this.uuid}${this.remaining}`
   }
 
   isFinalState(): boolean{
@@ -65,9 +65,14 @@ export const simulateFSA = (
   frontier.push(node)
   reached.set(node.state.key(), node)
 
-  while (frontier.length > 0) {
-    node = frontier.shift()!
+  for (let i = 0; i < frontier.length; i++){
+    const node = frontier[i]
     if (node.state.isFinalState()) {
+      result = new FSAExecutionResult(
+        true,
+        node.state.remaining,
+        generateTrace(node)
+      )
       break;
     }
     for (const successor of graph.getSuccessors(node)) {
@@ -76,14 +81,6 @@ export const simulateFSA = (
         reached.set(successor.state.key(), successor)
       }
     }
-  }
-
-  if (node) {
-    result = new FSAExecutionResult(
-      node.state.isFinal && node.state.remaining === '',
-      node.state.remaining,
-      generateTrace(node)
-    )
   }
 
   return result;
