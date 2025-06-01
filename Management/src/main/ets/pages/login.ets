@@ -9,6 +9,14 @@ interface LoginRequest {
   login: string;
   upassword: string;
 }
+interface LoginData {
+  userId: string;
+}
+interface LoginResponse<LoginData> {
+  status: boolean;
+  message:  string;
+  data: LoginData;
+}
 //let style_isChecked: boolean = false;
 let pwd_ischecked: boolean = false;
 let input_username: string = "";
@@ -108,18 +116,21 @@ struct login {
               if (index_style===0) {
                 //访问学生端登录接口
                 await axios.post('http://192.168.88.1:3001/student/auth/sign_in',requestData)
-                  .then((res: AxiosResponse) => {
+                  .then(async (res: AxiosResponse<LoginResponse<LoginData>>) => {
                     //单独取出res中的token
                     //const token = JSON.stringify(res.data.data.token);
                     //preferenceUtil.set("token",token);
-                    preferenceUtil.set("userId",JSON.stringify(res.data.data.userId))
+                    await preferenceUtil.delete('userId')
+                    await preferenceUtil.set("userId",JSON.stringify(res.data.data.userId))
+                    await preferenceUtil.save()
+                    console.log('用户请求成功',JSON.stringify(res.data.data.userId))
+                    console.log('用户首选项',JSON.stringify(preferenceUtil.readData("userId")))
+                    console.log('用户id',JSON.stringify(input_username))
                     //generalToken.setToken(token);
                     //generalUserId.setUserId(JSON.stringify(res.data.data.userId));
                     router.replaceUrl({
                       url: 'pages/main',
-                      params: {
-                        //'token': token
-                      }
+
                     },(err)=>{
                       if (err) {
                         console.error(`Invoke replaceUrl failed, code is ${err.code}, message is ${err.message}`);

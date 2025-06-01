@@ -1,6 +1,8 @@
 import { promptAction, router } from '@kit.ArkUI';
 import axios,{AxiosError,AxiosResponse} from '@ohos/axios';
 import {preferenceUtil} from "../utils/PreferencesUtil";
+import app from '@system.app';
+
 import json from '@ohos.util.json';
 //import { generalUserId } from '../general/userId';
 
@@ -198,8 +200,10 @@ struct Personal {
         .width('100%')
         //退出登录
         Button('退出登录')
-          .onClick(()=>{
-            //generalUserId.setUserId('');
+          .onClick(async ()=>{
+            //退出程序
+            await preferenceUtil.delete('userId')
+            getContext().getApplicationContext().killAllProcesses();
           })
       }
       .width('100%')
@@ -233,7 +237,7 @@ struct Personal {
     } else if(this.userRole === 'admin') {
        url = 'http://192.168.88.1:3001/admin/users/me';
     }
-    console.log('获取用户信息url为：', url)
+    console.log('获取用户信息url为：', preferenceUtil.readData('userId'))
     await axios.get(url,{
       params: {
         //userId: '272'
