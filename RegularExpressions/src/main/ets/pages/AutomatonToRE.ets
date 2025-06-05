@@ -121,7 +121,7 @@ struct ParentComponent {
     // let transitions = this.drawInvoker.getTransitions();
     this.stateInfo="";
     this.fsa=BaseAutomaton.getAutomaton(this.drawInvoker);
-    let statess = getStates(this.drawInvoker);
+    /*let statess = getStates(this.drawInvoker);
     let transitionss = getTransitions(this.drawInvoker);
     let states = this.fsa.getStates();
     let initialState = this.fsa.initialState;
@@ -144,7 +144,7 @@ struct ParentComponent {
     });
     //this.stateInfo = '状态:\n' + states.map(s => `UUID: ${s.state.uuid}, 状态名: ${s.state.name},是否初始状态: ${s.isInitialState}, 是否终止状态: ${s.state.isFinal}`).join('\n');
     //this.transitionInfo = '转换:\n' + transitions.map(t => `(${t.fromState.name} -> ${t.toState.name}, label: ${t.label})`).join('\n');
-    const automaton = ConvertToAutomaton.convert(statess, transitionss);
+    const automaton = ConvertToAutomaton.convert(statess, transitionss);*/
     let result=AutomatonToRegexConverter.convertToRegex(this.fsa)
     this.regexInfo = '正则表达式:' + result;
     // 显示信息

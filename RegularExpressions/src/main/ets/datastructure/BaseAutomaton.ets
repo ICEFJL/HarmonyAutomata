@@ -1,4 +1,4 @@
-import { Automaton,State,Transition,AutomatonType,IDraw,DrawInvoker,DrawState,DrawTransition,DrawType } from 'shared';
+import { Automaton,State,Transition,AutomatonType,IDraw,DrawInvoker,DrawState,DrawTransition,DrawType,Const } from 'shared';
 import { LogUtil, FileUtil } from '@pura/harmony-utils';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo as fs, ReadTextOptions } from '@kit.CoreFileKit';
@@ -202,6 +202,64 @@ export class BaseAutomaton extends Automaton<State, Transition> {
     draw.update(drawArray,DrawType.CREATE, delArray);
   }
 
+  public static isEqual(fsa1: BaseAutomaton, fsa2: BaseAutomaton): boolean {
+    let isNfa1 = BaseAutomaton.isNFA(fsa1);
+    let isNfa2 = BaseAutomaton.isNFA(fsa2);
+    if(isNfa1 !== isNfa2){
+      return false;
+    }
+    const min1 = BaseAutomaton.minimizeDFA(fsa1);
+    const min2 = BaseAutomaton.minimizeDFA(fsa2);
+
+    // 1. 检查初始状态是否存在
+    const initial1 = min1.initialState;
+    const initial2 = min2.initialState;
+    if (!initial1 || !initial2) return false;
+
+    // 2. 构建状态映射队列
+    const stateMap = new Map<number, number>();
+    const visited = new Set<number>();
+    const queue: number[] = [initial1.uuid];
+    stateMap.set(initial1.uuid, initial2.uuid);
+    visited.add(initial1.uuid);
+
+    while (queue.length > 0) {
+      const s1Uuid = queue.shift()!;
+      const s2Uuid = stateMap.get(s1Uuid)!;
+      const s1 = min1.getStateWithUuid(s1Uuid)!;
+      const s2 = min2.getStateWithUuid(s2Uuid)!;
+
+      // 终态必须一致
+      if (s1.isFinal !== s2.isFinal) return false;
+
+      // 遍历所有转移
+      const alphabet = BaseAutomaton.getAlphabet(min1);
+      for (const symbol of alphabet) {
+        const trans1 = min1.getTransitionsFromState(s1Uuid).find(t => t.label.includes(symbol));
+        const trans2 = min2.getTransitionsFromState(s2Uuid).find(t => t.label.includes(symbol));
+        if (!trans1 && !trans2) continue;
+        if (!trans1 || !trans2) return false;
+
+        const next1Uuid = trans1.to;
+        const next2Uuid = trans2.to;
+
+        // 检查映射是否一致
+        if (stateMap.has(next1Uuid)) {
+          if (stateMap.get(next1Uuid) !== next2Uuid) return false;
+        } else {
+          stateMap.set(next1Uuid, next2Uuid);
+          if (!visited.has(next1Uuid)) {
+            visited.add(next1Uuid);
+            queue.push(next1Uuid);
+          }
+        }
+      }
+    }
+
+    // 3. 检查所有状态都被映射
+    return stateMap.size === min1.getStates().length;
+  }
+
   public static isNFA(automaton: BaseAutomaton): boolean {
     const states = automaton.getStates();
     for (const state of states) {
@@ -209,7 +267,7 @@ export class BaseAutomaton extends Automaton<State, Transition> {
       const labels = transitions.map(transition => transition.label);
 
       // 检查是否存在空字符串
-      if (labels.includes("")) {
+      if (labels.includes(Const.EMPTY_STRING)) {
         return true;
       }
 
@@ -321,6 +379,113 @@ export class BaseAutomaton extends Automaton<State, Transition> {
     return false;
   }
 
+  public static minimizeDFA(dfa: BaseAutomaton): BaseAutomaton {
+    const states = dfa.getStates();
+    const transitions = dfa.getTransitions();
+    const symbols = new Set<string>();
+
+    // 收集所有符号（排除空串）
+    for (const t of transitions) {
+      if (t.label !== "") {
+        symbols.add(t.label);
+      }
+    }
+
+    // 初始分组：终态 和 非终态
+    const finalStates = states.filter(s => s.isFinal).map(s => s.uuid);
+    const nonFinalStates = states.filter(s => !s.isFinal).map(s => s.uuid);
+    let partitions: number[][] = [];
+    if (finalStates.length > 0) partitions.push(finalStates);
+    if (nonFinalStates.length > 0) partitions.push(nonFinalStates);
+
+    const getGroupIndex = (stateId: number, groups: number[][]): number => {
+      for (let i = 0; i < groups.length; i++) {
+        if (groups[i].includes(stateId)) return i;
+      }
+      return -1;
+    };
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const newPartitions: number[][] = [];
+
+      for (const group of partitions) {
+        const subGroups: Map<string, number[]> = new Map();
+
+        for (const stateId of group) {
+          const signature: string[] = [];
+          for (const symbol of symbols) {
+            const trans = dfa.getTransitionsFrom(stateId).find(t => t.label === symbol);
+            const targetGroup = trans ? getGroupIndex(trans.to, partitions) : -1;
+            signature.push(symbol + ':' + targetGroup);
+          }
+          const sigKey = signature.join('|');
+          if (!subGroups.has(sigKey)) {
+            subGroups.set(sigKey, []);
+          }
+          subGroups.get(sigKey)?.push(stateId);
+        }
+
+        if (subGroups.size === 1) {
+          newPartitions.push(group);
+        } else {
+          changed = true;
+          for (const subgroup of subGroups.values()) {
+            newPartitions.push(subgroup);
+          }
+        }
+      }
+
+      partitions = newPartitions;
+    }
+
+    // 构造新的最小化 DFA
+    const minimizedDFA = new BaseAutomaton();
+    const stateMap = new Map<string, State>();
+
+    const getGroupKey = (group: number[]): string =>
+    Array.from(group).sort((a, b) => a - b).join(',');
+
+    for (const group of partitions) {
+      const origState = dfa.getStateById(group[0]);
+      if (!origState) continue;
+      const key = getGroupKey(group);
+      const newState = new State(0, 0, `Q${stateMap.size}`, group.some(id => dfa.getStateById(id)?.isFinal ?? false));
+      stateMap.set(key, newState);
+      minimizedDFA.addState(newState);
+
+      if (dfa.initialState && group.includes(dfa.initialState.uuid)) {
+        minimizedDFA.setInitialState(newState);
+      }
+    }
+
+    for (const group of partitions) {
+      const fromKey = getGroupKey(group);
+      const fromState = stateMap.get(fromKey);
+      if (!fromState) continue;
+
+      const origStateId = group[0];
+      const fromTransitions = dfa.getTransitionsFrom(origStateId);
+
+      for (const symbol of symbols) {
+        const t = fromTransitions.find(tr => tr.label === symbol);
+        if (!t) continue;
+
+        const toStateId = t.to;
+        const toGroup = partitions.find(g => g.includes(toStateId));
+        if (!toGroup) continue;
+
+        const toKey = getGroupKey(toGroup);
+        const toState = stateMap.get(toKey);
+        if (!toState) continue;
+
+        minimizedDFA.addTransition(new Transition(fromState.uuid, toState.uuid, symbol));
+      }
+    }
+
+    return minimizedDFA;
+  }
 }
 
 // 工具类：插入连接符
