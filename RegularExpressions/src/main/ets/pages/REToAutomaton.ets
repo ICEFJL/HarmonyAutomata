@@ -106,7 +106,7 @@ struct ParentComponent {
         let automaton = RegexToAutomaton.convert(this.regexInput);
         let initialState = automaton.initialState;
         automaton = BaseAutomaton.convertNFAtoDFA(automaton);
-        //automaton=BaseAutomaton.minimize(automaton);
+        automaton = BaseAutomaton.minimizeDFA(automaton);
         this.gemLayoutAlgorithm.process(automaton) as FSAAutomaton;
         //clear
         this.drawInvoker.clearAll();

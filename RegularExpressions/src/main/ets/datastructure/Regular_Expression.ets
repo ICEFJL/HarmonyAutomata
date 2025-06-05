@@ -2,6 +2,7 @@ import { LogUtil, DateUtil, FileUtil } from '@pura/harmony-utils';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { Type as ClzTransType, instanceToPlain, plainToClass } from 'class-transformer';
 import 'reflect-metadata';
+import {BaseAutomaton,RegexToAutomaton} from '../datastructure/BaseAutomaton';
 import { fileIo as fs, ReadTextOptions } from '@kit.CoreFileKit';
 export default class Regular_Expression{
   regularexpression :string;
@@ -32,6 +33,16 @@ export default class Regular_Expression{
       LogUtil.error(`Regular_Expression-异常 ~ code: ${error.code} -·- message: ${error.message}`);
       return  "保存失败";
     }
+  }
+
+  public static isEqual(RE1: Regular_Expression, RE2: Regular_Expression): boolean {
+    let automaton1 = RegexToAutomaton.convert(RE1.regularexpression);
+    automaton1 = BaseAutomaton.convertNFAtoDFA(automaton1);
+    automaton1 = BaseAutomaton.minimizeDFA(automaton1);
+    let automaton2 = RegexToAutomaton.convert(RE2.regularexpression);
+    automaton2 = BaseAutomaton.convertNFAtoDFA(automaton2);
+    automaton2 = BaseAutomaton.minimizeDFA(automaton2);
+    return BaseAutomaton.isEqual(automaton1,automaton2);
   }
 
   public isValidRegex(): boolean {
