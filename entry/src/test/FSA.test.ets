@@ -1,7 +1,7 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
 import { DFA, NFA, FSA, simulateFSA, AutomatonCreator, NFAToDFATest} from 'shared'
-import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../main/ets/test/TestAutomaton';
-import { nfaToDFATestFSA_RES, minimizedNormalFSA, minDFATestFSA_RES } from '../main/ets/test/TestResultAutomaton';
+import { easyFSA, minDFATestFSA, nfaToDFATestFSA, normalFSA } from '../main/ets/FiniteAutomaton/test/TestAutomaton';
+import { nfaToDFATestFSA_RES, minimizedNormalFSA, minDFATestFSA_RES } from '../main/ets/FiniteAutomaton/test/TestResultAutomaton';
 function areSetsEqual(set1: Set<number>, set2: Set<number>): boolean {
   if (set1.size !== set2.size) {
     return false;

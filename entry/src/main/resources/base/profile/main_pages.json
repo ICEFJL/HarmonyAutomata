@@ -1,0 +1,28 @@
+{
+  "src": [
+    "pages/Index",
+    "PushdownAutomaton/pages/Index",
+    "FiniteAutomaton/pages/Index",
+    "FiniteAutomaton/pages/test",
+    "FiniteAutomaton/pages/test1",
+    "Management/pages/addExercise",
+    "Management/pages/addStudent",
+    "Management/pages/AnswerDetail",
+    "Management/pages/ExcerciseDetail",
+    "Management/pages/ExcerciseList",
+    "Management/pages/login",
+    "Management/pages/main",
+    "Management/pages/personal",
+    "Management/pages/register",
+    "Management/pages/result",
+    "Management/pages/TExcerciseDetail",
+    "Management/pages/tmain",
+    "TuringMachine/pages/Index",
+    "TuringMachine/pages/SimulateTM",
+    "RegularExpressions/pages/AutomatonToRE",
+    "RegularExpressions/pages/Index",
+    "RegularExpressions/pages/RegexFileList",
+    "RegularExpressions/pages/RegularExpression",
+    "RegularExpressions/pages/REToAutomaton"
+  ]
+}
