@@ -1,12 +1,39 @@
+# 基于鸿蒙平台开发的自动机模拟仿真软件
+
 # 总体架构
 
 在空项目的基础上创建了各个模块，分别为FiniteAutomaton、Management、PushdownAutomaton、RegularExpressions、TuringMachine、Shared，其中前五个为各自负责的模块,为HAP类型，Shared为共用模块，是HAR静态库类型。
 
+## 核心功能
+
+1. **可视化计算模型**
+
+   * 有限自动机：状态转换可视化编辑与模拟运行
+   * 下推自动机：栈操作动态演示与过程跟踪
+   * 图灵机：磁带操作可视化和算法模拟
+   * 正则表达式：转换NFA/DFA的双向可视化交互
+2. **交互式学习系统（未完全实现）**
+
+   * 习题管理系统：支持教师端创建/管理练习题
+   * 自动判题功能：基于形式化验证的解题评估
+   * 学习进度跟踪：用户学习记录与数据分析
+
+## 界面展示
+
+![](pic/1.png "主页")
+
+![](pic/2.png "保存页面")
+
+![](pic/3.png "有穷自动机菜单功能")
+
+![](pic/4.png "绘制界面")
+
+
 ## git分支
 
-git除主分支外，还有5条分支，分别对应5个模块，其名称分别为5个模块的缩写，如fa,mg,pa,re,tm。
+git除主分支外，还有5条分支，分别对应5个模块，其名称分别为5个模块的缩写，如fa,mg,pda,re,tm。
 
-除Shared模块在主分支上开发提交，其余每个模块在各自分支上开发
+除Shared模块在主分支上开发提交，其余每个模块在各自分支上开发,merge分支为多hap合并为单hap
 
 ## 多HAP开发和路由跳转
 
@@ -17,29 +44,6 @@ git除主分支外，还有5条分支，分别对应5个模块，其名称分别
 ## HAR静态库开发和使用
 
 可参考[HAR-应用程序包开发与使用-应用程序包基础知识-开发基础知识-基础入门 - 华为HarmonyOS开发者](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/har-package-V5)
-
-## 切换分支和更新主分支代码
-
-添加ssh公钥到coding,方便拉取代码[配置 SSH 公钥 - 什么是 DevOps? DevOps 介绍 ｜ CODING DevOps](https://coding.net/help/docs/repo/ssh/config.html)
-
-```
-git clone git@e.coding.net:icefjl/biyesheji/bishe.git
-```
-
-通过以上命令拉取代码仓库，进入文件夹后，执行以下命令切换到对应分支
-
-```
-git checkout 分支名
-```
-
-如共享代码有更新，在你负责的分支下通过以下命令更新共享代码
-
-```
-git fetch origin
-git merge origin/main
-```
-
-如有冲突，解决冲突后提交代码，再合并
 
 # 相关工具配置和使用
 
